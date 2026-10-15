@@ -11,7 +11,7 @@ LINKEDIN_URL = "https://www.linkedin.com/in/joaobarbosamf"
 GITHUB_URL = "https://github.com/Joao-programador"
 EMAIL_CONTACT = "joaogoncalves07082022@gmail.com"
 
-app, rt = fast_app(
+_app, rt = fast_app(
     htmx=False,
     surreal=False,
     pico=False,
@@ -199,6 +199,11 @@ window.featureCarousel = function() {
     ),
     live=False
 )
+
+# Exportação direta de nível superior exigida pelo construtor @vercel/python
+app = _app
+handler = app
+application = app
 
 BASE_DIR = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
