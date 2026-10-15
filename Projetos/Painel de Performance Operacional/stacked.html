@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Integrado de Performance (SGO Fictício)</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#FF8200',
+                        brandHover: '#e67500',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            transform: scale(0.67);
+            transform-origin: top left;
+            width: 149.25vw;
+            height: 149.25vh;
+        }
+
+        .soft-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        /* Toggle Buttons */
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            color: #64748b;
+            border: 1px solid transparent;
+        }
+        .toggle-btn:hover {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .toggle-btn.active {
+            background-color: #FF8200;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 130, 0, 0.3);
+        }
+        .time-toggle {
+            display: flex;
+            gap: 0.25rem;
+            background: white;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .main-mode-toggle .toggle-btn {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        /* Custom Select */
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+        .select-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+        .select-header:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+                .select-options {
+            display: none;
+            position: relative;
+            margin-top: 0.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
+            z-index: 10;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        .select-options.show {
+            display: block;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        /* Chips Container */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+        .chip.active {
+            background-color: #fff5eb;
+            border-color: #FF8200;
+            color: #FF8200;
+        }
+
+        /* JS Dynamic Classes */
+        .chips-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .accordion-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #334155;
+            margin-left: 0.25rem;
+        }
+
+        .select-option {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .select-option:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .select-option input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #FF8200;
+            cursor: pointer;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Animated Accordion */
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-content.expanded {
+            grid-template-rows: 1fr;
+        }
+        .accordion-inner {
+            overflow: hidden;
+        }
+
+        /* Chart customization overrides to ensure globals applied before script runs */
+        script[src*="chart.js"] + script {
+            /* Chart colors override hint */
+        }
+    </style>
+    
+<style>
+        .collapsible-content {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            opacity: 1;
+        }
+        .collapsible-content.hidden-state {
+            opacity: 0;
+            max-height: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+        .collapsible-content.visible-state {
+            opacity: 1;
+            max-height: 1200px;
+            overflow: visible;
+        }
+        
+        /* Toggle Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            margin-bottom: 0;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider {
+            background-color: #FF8200;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+</style>
+
+  <script type="module" src="./stacked.js"></script>
+  
+</head>
+<body class="antialiased bg-slate-50 overflow-hidden flex flex-col md:flex-row">
+    <!-- Sidebar Filters -->
+    <aside class="w-full md:w-[480px] h-full flex flex-col bg-white/80 backdrop-blur-xl border-r border-slate-200 z-50 overflow-hidden shadow-soft">
+        
+        <!-- Header & Sync Toggle -->
+        <div class="p-6 border-b border-slate-100 flex-shrink-0 bg-white">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight leading-tight">Sistema de Gestão Operacional (SGO Fictício)</h1>
+            <div class="flex flex-col gap-3 mt-3">
+                <div class="flex justify-between items-center">
+                    <a href="/" class="text-brand hover:text-brandHover font-semibold text-base uppercase tracking-wider transition-colors">&larr; Versão em Abas</a>
+                    <span class="text-base text-slate-400 font-medium px-2 py-1 bg-slate-100 rounded">Empilhada</span>
+                </div>
+                <button class="btn btn-secondary bg-slate-50 text-slate-600 hover:text-brand hover:bg-slate-100 px-3 py-2 text-base rounded-lg font-semibold flex items-center justify-center gap-2 border border-slate-200 w-full transition-colors" id="glossary-btn">
+                    <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" x2="12.01" y1="17" y2="17"></line></svg>
+                    Ver Glossário de Siglas
+                </button>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+                <span class="text-slate-700 font-bold text-lg">Sincronizar Filtros</span>
+                <label class="switch cursor-pointer">
+                    <input type="checkbox" id="sync-filters-toggle" onchange="window.toggleSyncMode(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Scrollable Sidebar Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 relative z-40">
+            
+            <!-- GLOBAL FILTERS (visible when sync is ON) -->
+            <div id="global-filters" class="collapsible-content hidden-state space-y-6">
+                <div class="p-4 bg-brand/5 border border-brand/20 rounded-xl">
+                    <div class="text-base font-bold text-brand uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Filtros Globais Ativos
+                    </div>
+                    <p class="text-[11px] text-slate-500 leading-tight">Estes filtros controlam os três gráficos simultaneamente.</p>
+                </div>
+                
+                <div class="filter-group" id="global-group-period">
+                    <div class="filter-label text-base font-bold text-slate-400 mb-3 uppercase tracking-wider">Período</div>
+                    <div class="time-toggle w-full">
+                        <button class="toggle-btn active flex-1" id="g-btn-quarterly" onclick="setTimeView('quarterly', 'global')">Trimestral</button>
+                        <button class="toggle-btn flex-1" id="g-btn-annual" onclick="setTimeView('annual', 'global')">Anual</button>
+                    </div>
+                    <div class="custom-select mt-2" style="position: relative; z-index: 50;">
+                        <div class="select-header" onclick="toggleDropdown('g-period')">
+                            <span class="truncate pr-4" id="g-period-header-text">Selecionar Períodos</span>
+                            <span class="arrow text-slate-400 text-base">▼</span>
+                        </div>
+                        <div class="select-options max-h-80 overflow-y-auto p-2" id="g-options-period"></div>
+                    </div>
+                </div>
+
+                <div class="filter-group" id="global-group-parks">
+                    <div class="filter-label text-base font-bold text-slate-400 mb-3 uppercase tracking-wider">Unidade Operacional</div>
+                    <div class="custom-select" id="g-dropdown-parks" style="position: relative; z-index: 40;">
+                        <div class="select-header" onclick="toggleDropdown('g-parks')">
+                            <span class="truncate pr-4" id="g-parks-header-text">Selecionar Unidades</span>
+                            <span class="arrow text-slate-400 text-base">▼</span>
+                        </div>
+                        <div class="select-options" id="g-options-parks"></div>
+                    </div>
+                </div>
+
+                <div class="filter-group" id="global-group-scale">
+                    <div class="filter-label text-base font-bold text-slate-400 mb-3 uppercase tracking-wider">Escala do Gráfico (Eixo Y)</div>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-[10px] text-slate-500 mb-1">Mínimo</label>
+                            <input type="number" step="0.1" value="0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="g-y-min" onchange="handleScaleChange('global')">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[10px] text-slate-500 mb-1">Máximo</label>
+                            <input type="number" step="0.1" value="1.0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="g-y-max" onchange="handleScaleChange('global')">
+                        </div>
+                    </div>
+                    <button onclick="resetScale('global')" class="mt-2 w-full text-[10px] py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50 transition-colors">Voltar ao Padrão</button>
+                </div>
+            </div>
+
+            <!-- INDIVIDUAL FILTERS ACCORDION (visible when sync is OFF) -->
+            <div id="indiv-accordion-container" class="space-y-4">
+                
+                <!-- Accordion 1: Percepção -->
+                <div class="border border-slate-200 rounded-xl bg-white shadow-sm overflow-visible relative z-30">
+                    <button onclick="toggleSidebarAccordion('acc-ps')" class="w-full p-4 text-left font-bold text-slate-700 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl">
+                        1. Experiência (IQX) <span id="icon-acc-ps" class="text-base transition-transform duration-300">▼</span>
+                    </button>
+                    <div id="acc-ps" class="indiv-filters p-4 space-y-6 hidden border-t border-slate-100">
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Período</div>
+                            <div class="time-toggle w-full">
+                                <button class="toggle-btn active flex-1" id="ps-btn-quarterly" onclick="setTimeView('quarterly', 'ps')">Trimestral</button>
+                                <button class="toggle-btn flex-1" id="ps-btn-annual" onclick="setTimeView('annual', 'ps')">Anual</button>
+                            </div>
+                            <div class="custom-select mt-2" style="position: relative; z-index: 45;">
+                                <div class="select-header" onclick="toggleDropdown('ps-period')">
+                                    <span class="truncate pr-4" id="ps-period-header-text">Selecionar Períodos</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options max-h-80 overflow-y-auto p-2" id="ps-options-period"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Unidade Operacional</div>
+                            <div class="custom-select" style="position: relative; z-index: 40;">
+                                <div class="select-header" onclick="toggleDropdown('ps-parks')">
+                                    <span class="truncate pr-4" id="ps-parks-header-text">Selecionar Unidades</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options" id="ps-options-parks"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Indicador</div>
+                            <div class="custom-select" style="position: relative; z-index: 35;">
+                                <div class="select-header" onclick="toggleDropdown('ps-indicators')">
+                                    <span class="truncate pr-4" id="ps-indicators-header-text">Selecionar Indicadores</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options" id="ps-options-indicators"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Escala do Gráfico (Eixo Y)</div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Mínimo</label>
+                                    <input type="number" step="0.1" value="0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="ps-y-min" onchange="handleScaleChange('ps')">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Máximo</label>
+                                    <input type="number" step="0.1" value="1.0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="ps-y-max" onchange="handleScaleChange('ps')">
+                                </div>
+                            </div>
+                            <button onclick="resetScale('ps')" class="mt-2 w-full text-[10px] py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50 transition-colors">Voltar ao Padrão</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 2: Vistorias -->
+                <div class="border border-slate-200 rounded-xl bg-white shadow-sm overflow-visible relative z-20">
+                    <button onclick="toggleSidebarAccordion('acc-vis')" class="w-full p-4 text-left font-bold text-slate-700 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl">
+                        2. Auditorias (IAT) <span id="icon-acc-vis" class="text-base transition-transform duration-300">▼</span>
+                    </button>
+                    <div id="acc-vis" class="indiv-filters p-4 space-y-6 hidden border-t border-slate-100">
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Período</div>
+                            <div class="time-toggle w-full">
+                                <button class="toggle-btn active flex-1" id="vis-btn-quarterly" onclick="setTimeView('quarterly', 'vis')">Trimestral</button>
+                                <button class="toggle-btn flex-1" id="vis-btn-annual" onclick="setTimeView('annual', 'vis')">Anual</button>
+                            </div>
+                            <div class="custom-select mt-2" style="position: relative; z-index: 45;">
+                                <div class="select-header" onclick="toggleDropdown('vis-period')">
+                                    <span class="truncate pr-4" id="vis-period-header-text">Selecionar Períodos</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options max-h-80 overflow-y-auto p-2" id="vis-options-period"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Unidade Operacional</div>
+                            <div class="custom-select" style="position: relative; z-index: 40;">
+                                <div class="select-header" onclick="toggleDropdown('vis-parks')">
+                                    <span class="truncate pr-4" id="vis-parks-header-text">Selecionar Unidades</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options" id="vis-options-parks"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Indicador</div>
+                            <div class="custom-select" style="position: relative; z-index: 35;">
+                                <div class="select-header" onclick="toggleDropdown('vis-indicators')">
+                                    <span class="truncate pr-4" id="vis-indicators-header-text">Selecionar Indicadores</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options" id="vis-options-indicators"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Escala do Gráfico (Eixo Y)</div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Mínimo</label>
+                                    <input type="number" step="0.1" value="0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="vis-y-min" onchange="handleScaleChange('vis')">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Máximo</label>
+                                    <input type="number" step="0.1" value="1.0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="vis-y-max" onchange="handleScaleChange('vis')">
+                                </div>
+                            </div>
+                            <button onclick="resetScale('vis')" class="mt-2 w-full text-[10px] py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50 transition-colors">Voltar ao Padrão</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accordion 3: Desempenho -->
+                <div class="border border-slate-200 rounded-xl bg-white shadow-sm overflow-visible relative z-10">
+                    <button onclick="toggleSidebarAccordion('acc-des')" class="w-full p-4 text-left font-bold text-slate-700 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl">
+                        3. Desempenho <span id="icon-acc-des" class="text-base transition-transform duration-300">▼</span>
+                    </button>
+                    <div id="acc-des" class="indiv-filters p-4 space-y-6 hidden border-t border-slate-100">
+                        
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Período</div>
+                            <div class="time-toggle w-full">
+                                <button class="toggle-btn active flex-1" id="des-btn-quarterly" onclick="setTimeView('quarterly', 'des')">Trimestral</button>
+                                <button class="toggle-btn flex-1" id="des-btn-annual" onclick="setTimeView('annual', 'des')">Anual</button>
+                            </div>
+                            <div class="custom-select mt-2" style="position: relative; z-index: 45;">
+                                <div class="select-header" onclick="toggleDropdown('des-period')">
+                                    <span class="truncate pr-4" id="des-period-header-text">Selecionar Períodos</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options max-h-80 overflow-y-auto p-2" id="des-options-period"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Unidade Operacional</div>
+                            <div class="custom-select" style="position: relative; z-index: 40;">
+                                <div class="select-header" onclick="toggleDropdown('des-parks')">
+                                    <span class="truncate pr-4" id="des-parks-header-text">Selecionar Unidades</span>
+                                    <span class="arrow text-slate-400 text-base">▼</span>
+                                </div>
+                                <div class="select-options" id="des-options-parks"></div>
+                            </div>
+                        </div>
+                        <div class="filter-group indiv-sync-hide collapsible-content">
+                            <div class="filter-label text-base font-bold text-slate-400 mb-2 uppercase tracking-wider">Escala do Gráfico (Eixo Y)</div>
+                            <div class="flex gap-2">
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Mínimo</label>
+                                    <input type="number" step="0.1" value="0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="des-y-min" onchange="handleScaleChange('des')">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] text-slate-500 mb-1">Máximo</label>
+                                    <input type="number" step="0.1" value="1.0" class="w-full text-base p-1.5 border border-slate-200 rounded focus:border-brand outline-none" id="des-y-max" onchange="handleScaleChange('des')">
+                                </div>
+                            </div>
+                            <button onclick="resetScale('des')" class="mt-2 w-full text-[10px] py-1 border border-slate-200 rounded text-slate-500 hover:bg-slate-50 transition-colors">Voltar ao Padrão</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT (Charts) -->
+    <main class="flex-1 h-full flex flex-col p-4 md:p-6 gap-4 overflow-hidden bg-slate-50/50">
+        
+        <!-- SECTION 1: PERCEPÇÃO -->
+        <section class="chart-card soft-glass rounded-2xl p-4 flex flex-col flex-1 min-h-0 relative z-30 shadow-soft">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+                <h2 class="text-lg font-bold text-slate-800">1. Qualidade da Experiência (IQX)</h2>
+            </div>
+            <div class="chart-wrapper relative w-full flex-1 min-h-0 flex items-center">
+                <div class="flex-1 h-full relative min-w-0">
+                    <canvas id="chart-ps"></canvas>
+                </div>
+                <div id="html-legend-ps" class="flex-shrink-0 px-2 md:px-4 min-w-[200px] max-w-[50%] overflow-y-auto max-h-full"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: VISTORIAS -->
+        <section class="chart-card soft-glass rounded-2xl p-4 flex flex-col flex-1 min-h-0 relative z-20 shadow-soft">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+                <h2 class="text-lg font-bold text-slate-800">2. Auditorias Técnicas (IAT)</h2>
+            </div>
+            <div class="chart-wrapper relative w-full flex-1 min-h-0 flex items-center">
+                <div class="flex-1 h-full relative min-w-0">
+                    <canvas id="chart-vistoria"></canvas>
+                </div>
+                <div id="html-legend-vis" class="flex-shrink-0 px-2 md:px-4 min-w-[200px] max-w-[50%] overflow-y-auto max-h-full"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DESEMPENHO -->
+        <section class="chart-card soft-glass rounded-2xl p-4 flex flex-col flex-1 min-h-0 relative z-10 shadow-soft">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
+                <h2 class="text-lg font-bold text-slate-800">3. Desempenho</h2>
+                <div class="time-toggle" style="padding: 2px;">
+                    <button class="toggle-btn active text-[10px] py-1 px-3" id="des-btn-ipu" onclick="setDesempenhoInd('IPU')">IPU</button>
+                    <button class="toggle-btn text-[10px] py-1 px-3" id="des-btn-ipc" onclick="setDesempenhoInd('IPC')">IPC</button>
+                </div>
+            </div>
+            <div class="chart-wrapper relative w-full flex-1 min-h-0 flex items-center">
+                <div class="flex-1 h-full relative min-w-0">
+                    <canvas id="chart-desempenho"></canvas>
+                </div>
+                <div id="html-legend-des" class="flex-shrink-0 px-2 md:px-4 min-w-[200px] max-w-[50%] overflow-y-auto max-h-full"></div>
+            </div>
+        </section>
+        
+        <div class="mt-4 mb-4 bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex items-center justify-center gap-3 text-lg text-slate-600 shadow-sm mx-4">
+            <svg class="w-5 h-5 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span><strong>Nota sobre os Gráficos:</strong> Espaços em branco ou quebras nas séries temporais indicam períodos em que a respectiva unidade ou indicador não teve registro computado no ciclo correspondente.</span>
+        </div>
+        
+    </main>
+
+<script>
+    // Accordion Logic
+    function toggleSidebarAccordion(id) {
+        const ids = ['acc-ps', 'acc-vis', 'acc-des'];
+        ids.forEach(accId => {
+            const el = document.getElementById(accId);
+            const icon = document.getElementById('icon-' + accId);
+            if (accId === id) {
+                if (el.classList.contains('hidden')) {
+                    el.classList.remove('hidden');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    el.classList.add('hidden');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
+</script>
+<script>
+        // Intercept Chart.js to enforce elegant styling
+        const originalChart = window.Chart;
+        if(originalChart) {
+            originalChart.defaults.font.family = "'Outfit', sans-serif";
+            originalChart.defaults.color = '#64748b';
+            originalChart.defaults.scale.grid.color = 'rgba(0,0,0,0.04)';
+            originalChart.defaults.scale.grid.borderColor = 'rgba(0,0,0,0)';
+            originalChart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            originalChart.defaults.plugins.tooltip.titleColor = '#1e293b';
+            originalChart.defaults.plugins.tooltip.bodyColor = '#334155';
+            originalChart.defaults.plugins.tooltip.borderColor = 'rgba(0,0,0,0.05)';
+            originalChart.defaults.plugins.tooltip.borderWidth = 1;
+            originalChart.defaults.plugins.tooltip.padding = 12;
+            originalChart.defaults.plugins.tooltip.cornerRadius = 8;
+            originalChart.defaults.plugins.tooltip.boxPadding = 6;
+            originalChart.defaults.plugins.tooltip.usePointStyle = true;
+            originalChart.defaults.elements.line.borderWidth = 3;
+            originalChart.defaults.elements.line.tension = 0.3; // smooth curves
+            originalChart.defaults.elements.point.radius = 4;
+            originalChart.defaults.elements.point.hoverRadius = 6;
+            originalChart.defaults.elements.point.borderWidth = 2;
+        }
+</script>
+<!-- Glossary Modal -->
+<div class="modal-overlay" id="glossary-modal">
+<div class="modal-content bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl border border-slate-100 max-h-[80vh] flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-bold text-slate-800">Glossário Operacional (SGO Fictício)</h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" id="close-glossary">
+<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</button>
+</div>
+<div class="modal-body overflow-y-auto pr-2 text-slate-700 text-base space-y-4 mb-6">
+<p><strong class="text-slate-900">SGO:</strong> Sistema de Gestão Operacional Fictício.</p>
+<p><strong class="text-slate-900">IPC:</strong> Índice de Performance Consolidado. Métrica global consolidada de desempenho das operações, apurada trimestralmente como média ponderada das unidades.</p>
+<p><strong class="text-slate-900">IPU:</strong> Índice de Performance por Unidade. Calculado pela fórmula parametrizada: <code>(IAT * 40%) + (IQX * 60%)</code>.</p>
+<p><strong class="text-slate-900">IAT:</strong> Índice de Auditoria Técnica. Nota padronizada de 0 a 1 resultante de vistorias técnicas de qualidade, segurança e infraestrutura (Indicadores IND-B01 a IND-B06).</p>
+<p><strong class="text-slate-900">IQX:</strong> Índice de Qualidade da Experiência. Nota de 0 a 1 mensurada via amostragem estruturada de percepção e satisfação dos usuários (Indicadores IND-A01 a IND-A10).</p>
+<div class="mt-6 pt-4 border-t border-slate-100">
+<h3 class="font-bold text-slate-800 mb-2">Compreendendo os Gráficos</h3>
+<p>Sobre valores nulos: Interrupções ou lacunas nas séries temporais indicam períodos em que a auditoria técnica ou a amostragem de campo não foram realizadas na respectiva unidade.</p>
+</div>
+</div>
+<div class="modal-footer flex justify-end">
+<button class="btn btn-primary bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-brand/20" id="confirm-glossary">Entendi</button>
+</div>
+</div>
+</div>
+
+</body>
+</html>

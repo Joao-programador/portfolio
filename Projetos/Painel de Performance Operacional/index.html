@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sistema de Gestão Operacional (SGO Fictício)</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#FF8200',
+                        brandHover: '#e67500',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            transform: scale(0.67);
+            transform-origin: top left;
+            width: 149.25vw;
+            height: 149.25vh;
+        }
+
+        .soft-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        /* Toggle Buttons */
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            color: #64748b;
+            border: 1px solid transparent;
+        }
+        .toggle-btn:hover {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+        .toggle-btn.active {
+            background-color: #FF8200;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 130, 0, 0.3);
+        }
+        .time-toggle {
+            display: flex;
+            gap: 0.25rem;
+            background: white;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .main-mode-toggle .toggle-btn {
+            padding: 0.5rem 0.25rem;
+            font-size: 0.8rem;
+        }
+
+        /* Custom Select */
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+        .select-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+        .select-header:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .select-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            z-index: 50;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        .select-options.show {
+            display: block;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        /* Chips Container */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+        .chip.active {
+            background-color: #fff5eb;
+            border-color: #FF8200;
+            color: #FF8200;
+        }
+
+        /* JS Dynamic Classes */
+        .chips-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .accordion-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #334155;
+            margin-left: 0.25rem;
+        }
+
+        .select-option {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .select-option:hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .select-option input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #FF8200;
+            cursor: pointer;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Animated Accordion */
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-content.expanded {
+            grid-template-rows: 1fr;
+        }
+        .accordion-inner {
+            overflow: hidden;
+        }
+
+        /* Chart customization overrides to ensure globals applied before script runs */
+        script[src*="chart.js"] + script {
+            /* Chart colors override hint */
+        }
+    </style>
+  <script type="module" src="./main.js"></script>
+  
+</head>
+<body class="antialiased overflow-hidden flex flex-col p-4 md:p-8">
+<div class="dashboard-container max-w-[1600px] mx-auto w-full flex-1 flex flex-col gap-6 overflow-hidden" id="capture-area">
+<!-- Header -->
+<header class="header soft-glass rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<h1 class="text-2xl font-bold text-slate-800 tracking-tight">Sistema de Gestão Operacional (SGO Fictício)</h1>
+<p class="text-base text-slate-500 font-medium mt-1">Acompanhamento do Índice de Performance Consolidado (IPC), Auditoria Técnica (IAT) e Qualidade da Experiência (IQX)</p>
+</div>
+<div class="header-actions flex gap-6 items-center">
+<a href="/stacked.html" class="text-brand hover:text-brandHover font-semibold text-base transition-colors">Visão Empilhada &rarr;</a>
+<div class="h-6 w-px bg-slate-200"></div>
+<button class="btn btn-secondary text-slate-600 hover:text-brand px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all" id="glossary-btn">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="18"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" x2="12.01" y1="17" y2="17"></line></svg>
+Glossário
+</button>
+<div class="h-6 w-px bg-slate-200"></div>
+<button class="btn btn-primary bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-brand/20" id="export-btn">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+                    Exportar PNG
+                </button>
+</div>
+</header>
+<!-- Main Content Layout -->
+<div class="main-content flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
+<!-- Sidebar -->
+<aside class="sidebar w-full lg:w-96 flex flex-col gap-6 overflow-y-auto pr-2">
+<!-- Mode Toggle -->
+<div class="soft-glass rounded-2xl p-5">
+<div class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Modo de Análise</div>
+<div class="time-toggle main-mode-toggle flex-col sm:flex-row">
+<button class="toggle-btn active flex-1 text-center" id="btn-mode-percepcao" onclick="setDashboardMode('percepcao')">Qualidade da Experiência (IQX)</button>
+<button class="toggle-btn flex-1 text-center" id="btn-mode-vistorias" onclick="setDashboardMode('vistorias')">Auditorias Técnicas (IAT)</button>
+<button class="toggle-btn flex-1 text-center" id="btn-mode-desempenho" onclick="setDashboardMode('desempenho')">Performance Integrada (IPC)</button>
+<button class="toggle-btn flex-1 text-center" id="btn-mode-livre" onclick="setDashboardMode('livre')">Modo Livre (Cruzamento)</button>
+</div>
+</div>
+<!-- Filters -->
+<div class="soft-glass rounded-2xl p-5 flex flex-col gap-6">
+<div class="filter-group">
+<div class="filter-label text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Período</div>
+<div class="time-toggle">
+<button class="toggle-btn active flex-1" id="btn-quarterly" onclick="setTimeView('quarterly')">Trimestral</button>
+<button class="toggle-btn flex-1" id="btn-annual" onclick="setTimeView('annual')">Anual</button>
+</div>
+<div class="info-text text-sm text-slate-500 mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100" id="annual-info" style="display: none;">
+<span class="text-brand font-bold mr-1">*</span> Na visão <b>Anual</b>, o valor exibido é a <b>média aritmética</b> dos trimestres para representar o ano.
+                        </div>
+<div class="custom-select mt-2">
+    <div class="select-header" onclick="toggleDropdown('period')">
+        <span class="truncate pr-4" id="period-header-text">Selecionar Períodos</span>
+        <span class="arrow text-slate-400 text-sm">▼</span>
+    </div>
+    <div class="select-options max-h-80 overflow-y-auto p-2" id="options-period">
+        <!-- Javascript will render the chips here -->
+    </div>
+</div>
+</div>
+<div class="filter-group" id="group-parks">
+<div class="filter-label text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Unidade Operacional</div>
+<div class="custom-select" id="dropdown-parks">
+<div class="select-header" onclick="toggleDropdown('parks')">
+<span class="truncate pr-4" id="parks-header-text">Selecionar Unidades</span>
+<span class="arrow text-slate-400 text-sm">▼</span>
+</div>
+<div class="select-options" id="options-parks">
+<!-- Options injected here -->
+</div>
+</div>
+</div>
+<div class="filter-group" id="group-indicators">
+<div class="filter-label text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Indicador</div>
+<div id="indicators-percepcao">
+<div class="custom-select" id="dropdown-indicators">
+<div class="select-header" onclick="toggleDropdown('indicators')">
+<span class="truncate pr-4" id="indicators-header-text">Selecionar Indicadores</span>
+<span class="arrow text-slate-400 text-sm">▼</span>
+</div>
+<div class="select-options" id="options-indicators">
+<!-- Options injected here -->
+</div>
+</div>
+</div>
+<div id="indicators-vistorias" style="display: none;">
+<div class="custom-select" id="dropdown-indicators-vistoria">
+<div class="select-header" onclick="toggleDropdown('indicators-vistoria')">
+<span class="truncate pr-4" id="indicators-vistoria-header-text">Selecionar Indicadores</span>
+<span class="arrow text-slate-400 text-sm">▼</span>
+</div>
+<div class="select-options" id="options-indicators-vistoria">
+<!-- Options injected here -->
+</div>
+</div>
+</div>
+<div id="indicators-desempenho" style="display: none;">
+<div class="time-toggle">
+<button class="toggle-btn active flex-1" id="btn-ind-ipu" onclick="setDesempenhoInd('IPU')">IPU</button>
+<button class="toggle-btn flex-1" id="btn-ind-ipc" onclick="setDesempenhoInd('IPC')">IPC</button>
+</div>
+<div class="info-text text-sm text-slate-500 mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100" id="fde-info" style="display: none;">
+<span class="text-brand font-bold mr-1">*</span> O <b>IPC</b> (Índice de Performance Consolidado) é a métrica global apurada pela média ponderada das notas de cada unidade operacional. Neste modo, o filtro individual de unidades é desativado.
+                            </div>
+</div>
+<div id="indicators-livre" style="display: none;">
+<div class="custom-select" id="dropdown-indicators-livre">
+<div class="select-header" onclick="toggleDropdown('indicators-livre')">
+<span class="truncate pr-4" id="indicators-livre-header-text">Selecionar Indicadores Múltiplos</span>
+<span class="arrow text-slate-400 text-sm">▼</span>
+</div>
+<div class="select-options" id="options-indicators-livre">
+<!-- Options injected here -->
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Chart Area -->
+<main class="chart-section flex-1 min-w-0 flex flex-col p-4 md:p-6">
+<div id="kpi-container" class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-4 empty:hidden relative z-50"></div>
+<div class="chart-card soft-glass rounded-2xl p-6 pr-2 flex-1 flex flex-col min-h-[500px] relative z-10">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-slate-800" id="chart-title">Evolução dos Indicadores</h2>
+</div>
+<div class="chart-wrapper flex-1 relative w-full h-full flex items-center">
+<div class="flex-1 h-full relative min-w-0">
+<canvas id="lineChart"></canvas>
+</div>
+<div id="html-legend-main" class="flex-shrink-0 px-2 md:px-4 min-w-[150px] max-w-[25%] overflow-y-auto max-h-full"></div>
+</div>
+<div class="mt-5 bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex items-center justify-center gap-3 text-base text-slate-600 shadow-sm">
+    <svg class="w-5 h-5 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span><strong>Nota sobre os Gráficos:</strong> Espaços em branco ou quebras nas séries temporais indicam períodos em que a respectiva unidade ou indicador não teve registro computado no ciclo correspondente.</span>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="export-modal">
+<div class="modal-content bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl border border-slate-100 max-h-[80vh] flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-bold text-slate-800">Glossário Operacional (SGO Fictício)</h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" id="close-glossary">
+<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</button>
+</div>
+<div class="modal-body overflow-y-auto pr-2 text-slate-700 text-base space-y-4 mb-6">
+<p><strong class="text-slate-900">SGO:</strong> Sistema de Gestão Operacional Fictício.</p>
+<p><strong class="text-slate-900">IPC:</strong> Índice de Performance Consolidado. Métrica global consolidada de desempenho das operações, apurada trimestralmente como média ponderada das unidades.</p>
+<p><strong class="text-slate-900">IPU:</strong> Índice de Performance por Unidade. Calculado pela fórmula parametrizada: <code>(IAT * 40%) + (IQX * 60%)</code>.</p>
+<p><strong class="text-slate-900">IAT:</strong> Índice de Auditoria Técnica. Nota padronizada de 0 a 1 resultante de vistorias técnicas de qualidade, segurança e infraestrutura (Indicadores IND-B01 a IND-B06).</p>
+<p><strong class="text-slate-900">IQX:</strong> Índice de Qualidade da Experiência. Nota de 0 a 1 mensurada via amostragem estruturada de percepção e satisfação dos usuários (Indicadores IND-A01 a IND-A10).</p>
+<div class="mt-6 pt-4 border-t border-slate-100">
+<h3 class="font-bold text-slate-800 mb-2">Compreendendo os Gráficos</h3>
+<p>Sobre valores nulos: Interrupções ou lacunas nas séries temporais indicam períodos em que a auditoria técnica ou a amostragem de campo não foram realizadas na respectiva unidade.</p>
+</div>
+</div>
+<div class="modal-footer flex justify-end">
+<button class="btn btn-primary bg-brand hover:bg-brandHover text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-brand/20" id="confirm-glossary">Entendi</button>
+</div>
+</div>
+</div>
+<!-- Inject Chart Styling Overrides before app.js -->
+<script>
+        // Intercept Chart.js to enforce elegant styling
+        const originalChart = window.Chart;
+        if(originalChart) {
+            originalChart.defaults.font.family = "'Outfit', sans-serif";
+            originalChart.defaults.color = '#64748b';
+            originalChart.defaults.scale.grid.color = 'rgba(0,0,0,0.04)';
+            originalChart.defaults.scale.grid.borderColor = 'rgba(0,0,0,0)';
+            originalChart.defaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            originalChart.defaults.plugins.tooltip.titleColor = '#1e293b';
+            originalChart.defaults.plugins.tooltip.bodyColor = '#334155';
+            originalChart.defaults.plugins.tooltip.borderColor = 'rgba(0,0,0,0.05)';
+            originalChart.defaults.plugins.tooltip.borderWidth = 1;
+            originalChart.defaults.plugins.tooltip.padding = 12;
+            originalChart.defaults.plugins.tooltip.cornerRadius = 8;
+            originalChart.defaults.plugins.tooltip.boxPadding = 6;
+            originalChart.defaults.plugins.tooltip.usePointStyle = true;
+            originalChart.defaults.elements.line.borderWidth = 3;
+            originalChart.defaults.elements.line.tension = 0.3; // smooth curves
+            originalChart.defaults.elements.point.radius = 4;
+            originalChart.defaults.elements.point.hoverRadius = 6;
+            originalChart.defaults.elements.point.borderWidth = 2;
+        }
+    </script>
+
+</body></html>

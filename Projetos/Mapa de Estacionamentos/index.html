@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_7fa2f1ea8b62b7353d314eb06a1c442e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            "colors": {
+                "secondary-fixed": "#c4e7ff", "on-surface": "#191c1e", "surface-container": "#eceef0", "surface": "#f7f9fb",
+                "surface-container-highest": "#e0e3e5", "primary-fixed": "#ffdcc3", "map-accent": "#F08200", "surface-tint": "#914c00",
+                "outline": "#897363", "inverse-on-surface": "#eff1f3", "on-secondary-fixed": "#001e2c", "surface-container-high": "#e6e8ea",
+                "on-tertiary": "#ffffff", "glass-bg": "rgba(248, 250, 252, 0.85)", "on-tertiary-fixed": "#0b1c30", "surface-variant": "#e0e3e5",
+                "surface-dim": "#d8dadc", "on-primary-container": "#562b00", "on-primary-fixed-variant": "#6e3900", "tertiary-container": "#90a0b9",
+                "border-subtle": "rgba(0, 45, 64, 0.1)", "tertiary-fixed": "#d3e4fe", "tertiary": "#505f76", "outline-variant": "#ddc1af",
+                "on-primary-fixed": "#2f1500", "inverse-primary": "#ffb77e", "on-secondary-container": "#43677c", "on-surface-variant": "#564335",
+                "secondary": "#3f6378", "inverse-surface": "#2d3133", "on-error-container": "#93000a", "on-error": "#ffffff",
+                "surface-bright": "#f7f9fb", "primary-fixed-dim": "#ffb77e", "surface-container-low": "#f2f4f6", "error-container": "#ffdad6",
+                "on-tertiary-container": "#27374b", "on-background": "#191c1e", "on-primary": "#ffffff", "secondary-container": "#c0e5fe",
+                "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#38485d", "secondary-fixed-dim": "#a7cbe4",
+                "background": "#f7f9fb", "on-secondary-fixed-variant": "#264b5f", "tertiary-fixed-dim": "#b7c8e1", "error": "#ba1a1a",
+                "on-secondary": "#ffffff", "primary-container": "#f08200", "primary": "#914c00"
+            },
+            "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+            "spacing": { "gutter": "1.5rem", "stack-default": "1rem", "panel-width-lg": "420px", "panel-width-sm": "320px", "map-margin": "1.25rem", "stack-compact": "0.5rem" },
+            "fontFamily": { "headline-sm": ["Geist"], "headline-md": ["Geist"], "mono-data": ["Geist Mono"], "display-lg": ["Geist"], "playfair": ["Playfair Display", "serif"], "body-md": ["Geist"], "body-lg": ["Geist"], "headline-lg-mobile": ["Geist"], "label-caps": ["Geist"] },
+            "fontSize": {
+                "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "mono-data": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600"}]
+            }
+        }
+    }
+}
+</script>
+
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .icon-fill { font-variation-settings: 'FILL' 1; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: theme('colors.border-subtle'); border-radius: theme('borderRadius.full'); }
+    .pointer-none { pointer-events: none; }
+    .pointer-auto { pointer-events: auto; }
+    .leaflet-control-container { z-index: 1000 !important; }
+    
+    .leaflet-bottom.leaflet-right {
+        bottom: 1.5rem !important;
+        right: 1.5rem !important;
+    }
+    .leaflet-control-zoom {
+        border: none !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1) !important;
+        margin: 0 !important;
+        border-radius: 0.5rem !important;
+        overflow: hidden !important;
+    }
+    .leaflet-control-zoom a {
+        background-color: white !important;
+        color: #191c1e !important;
+        border-bottom: 1px solid #e0e3e5 !important;
+        width: 44px !important;
+        height: 44px !important;
+        line-height: 44px !important;
+        font-size: 20px !important;
+    }
+    .leaflet-control-zoom a:last-child {
+        border-bottom: none !important;
+    }
+    .leaflet-control-zoom a:hover {
+        background-color: #f7f9fb !important;
+        color: #F08200 !important;
+    }
+    
+    @keyframes pulseMarker {
+        0% { transform: scale(0.5); opacity: 0; }
+        60% { transform: scale(1.3); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .marker-animate {
+        animation: pulseMarker 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+        transform-origin: center center;
+        transform-box: fill-box;
+    }
+
+    /* Grayscale OSM Tile styling */
+    .leaflet-tile-pane {
+        filter: grayscale(100%) contrast(92%) brightness(104%);
+    }
+</style>
+
+<div class="font-body-md text-on-surface bg-transparent w-full h-full absolute inset-0 pointer-events-none z-[9990] overflow-hidden" id="dashboardUI">
+
+    <!-- Toggle Sidebar Button (Visible if sidebar is closed) -->
+    <button onclick="toggleMainSidebar()" class="fixed top-4 left-4 sm:top-6 sm:left-6 z-[9997] px-6 h-14 rounded-full bg-[#F08200] border-[3px] border-white shadow-[0_4px_20px_rgba(240,130,0,0.4)] flex items-center justify-center gap-2.5 text-white hover:scale-105 transition-all pointer-auto group" title="Abrir Filtros">
+        <span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform" style="font-size:22px;">filter_alt</span>
+        <span class="font-label-caps tracking-widest text-[13px] font-bold uppercase">Filtros e Dados</span>
+    </button>
+
+    <button onclick="recenterMap()" class="fixed bottom-[125px] right-6 sm:bottom-[125px] sm:right-6 z-[9997] w-[44px] h-[44px] rounded-lg bg-white shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),_0_4px_6px_-4px_rgba(0,0,0,0.1)] flex items-center justify-center text-on-surface hover:text-[#F08200] hover:bg-[#f7f9fb] transition-all pointer-auto active:scale-95" title="Centralizar Mapa">
+        <span class="material-symbols-outlined" style="font-size:22px;">my_location</span>
+    </button>
+
+    <!-- LAYER 1: Floating Left Panel (Filters & Context) -->
+    <aside id="mainSidebar" class="absolute left-4 sm:left-map-margin top-4 sm:top-map-margin bottom-4 sm:bottom-map-margin w-[calc(100%-2rem)] sm:w-[360px] bg-glass-bg backdrop-blur-xl border border-border-subtle rounded-xl shadow-2xl flex flex-col z-[9998] overflow-hidden pointer-auto transition-transform duration-500 transform translate-x-0">
+        
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+            <!-- Header Brand Anchor (Now scrolling) -->
+            <header class="bg-map-accent text-white p-gutter relative shrink-0">
+                <p class="font-label-caps text-[10px] tracking-widest text-white/90 mb-0.5">MAPEAMENTO DE</p>
+                <h1 class="font-headline-sm text-[20px] leading-tight font-bold text-white uppercase">Edifícios-Garagem</h1>
+                
+                <!-- Collapse Button -->
+                <button onclick="toggleMainSidebar()" class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">keyboard_double_arrow_left</span>
+                </button>
+            </header>
+
+            <div class="p-gutter flex flex-col gap-stack-default pb-8">
+                <!-- Metrics Cards -->
+                <div class="grid grid-cols-3 gap-2 shrink-0" id="metricsContainer"></div>
+                
+                <!-- Search Bar -->
+                <div class="relative shrink-0 mt-2">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-tertiary text-[18px]">search</span>
+                    <input id="searchInput" onkeyup="applyFilters()" class="w-full bg-surface border border-border-subtle rounded-lg py-2 pl-14 pr-4 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Buscar por rua ou código..." type="text"/>
+                </div>
+
+                <!-- Active Filter Chip -->
+                <div id="activeChips" class="shrink-0 flex flex-wrap items-center gap-2 empty:hidden mt-1"></div>
+
+                <!-- Filters Section -->
+                <div class="mt-2">
+                    <h2 class="text-map-accent italic font-bold text-[18px] mb-2">Filtros</h2>
+                    <div class="flex flex-col gap-0" id="filterContainer"></div>
+                </div>
+                
+                <!-- Clear Filters Action -->
+                <div class="mt-4 flex justify-center w-full">
+                    <button onclick="resetFilters()" class="w-full sm:w-auto bg-transparent border border-on-surface/20 hover:border-map-accent hover:text-map-accent text-on-surface font-body-md text-[14px] font-medium py-2.5 px-6 rounded-full flex items-center justify-center gap-2 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                        Remover filtros
+                    </button>
+                </div>
+
+                <!-- Legend -->
+                <div class="mt-6 p-4 bg-surface rounded-xl border border-border-subtle shrink-0">
+                    <h3 class="font-label-caps text-[11px] font-bold text-tertiary mb-3 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">map</span>
+                        Legenda de Cores
+                    </h3>
+                    <ul class="flex flex-col gap-3">
+                        <li class="flex items-start gap-3">
+                            <div class="w-3.5 h-3.5 rounded-full mt-0.5 shrink-0 shadow-sm" style="background-color: #007BFF;"></div>
+                            <span class="font-body-md text-[13px] leading-tight text-on-surface font-medium">Prédio inteiro estacionamento</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-3.5 h-3.5 rounded-full mt-0.5 shrink-0 shadow-sm" style="background-color: #28a745;"></div>
+                            <span class="font-body-md text-[13px] leading-tight text-on-surface font-medium">Prédio ocioso</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-3.5 h-3.5 rounded-full mt-0.5 shrink-0 shadow-sm" style="background-color: #28a745;"></div>
+                            <span class="font-body-md text-[13px] leading-tight text-on-surface font-medium">Uso comp. (Residencial informal)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-3.5 h-3.5 rounded-full mt-0.5 shrink-0 shadow-sm" style="background-color: #F08200;"></div>
+                            <span class="font-body-md text-[13px] leading-tight text-on-surface font-medium">Uso comp. (Outros) ou Geral</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Action (Fixed) -->
+        <div class="p-4 bg-surface/80 backdrop-blur-md border-t border-border-subtle shrink-0 flex flex-col items-center justify-center h-16">
+            <p id="counterBadge" class="text-center font-body-md text-[13px] font-medium text-tertiary mb-0">Aguardando dados...</p>
+        </div>
+    </aside>
+
+    <!-- LAYER 1: Right Detail Sidebar (Slides in) -->
+    <aside id="sidebarPanel" class="absolute right-4 sm:right-map-margin top-4 sm:top-map-margin bottom-4 sm:bottom-map-margin w-[calc(100%-2rem)] sm:w-panel-width-lg bg-white border border-border-subtle rounded-xl shadow-2xl flex flex-col z-[9999] overflow-hidden transform transition-transform duration-500 translate-x-[120%] pointer-auto">
+        <!-- Hero Image Area -->
+        <div class="relative h-[200px] sm:h-[260px] w-full bg-surface-variant shrink-0">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+            <div id="sidebarImage" class="absolute inset-0 bg-cover bg-center transition-all duration-500 ease-in-out" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop');"></div>
+            
+            <!-- Close Button -->
+            <button onclick="closeSidebar()" class="absolute top-4 right-4 z-20 bg-black/40 hover:bg-black/60 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors border border-white/20">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            
+            <!-- Image Navigation -->
+            <div id="sliderControls" class="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 hidden">
+                <button onclick="prevImage()" class="bg-white/90 hover:bg-white text-on-surface rounded-lg p-1.5 shadow-sm transition-colors flex items-center"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                <button onclick="nextImage()" class="bg-white/90 hover:bg-white text-on-surface rounded-lg p-1.5 shadow-sm transition-colors flex items-center"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                <span id="sliderBadge" class="bg-on-surface/80 backdrop-blur-md text-white font-mono-data text-[11px] px-2.5 py-1.5 rounded-lg border border-white/10 ml-1">1/2</span>
+            </div>
+        </div>
+
+        <!-- Detail Content -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-surface-container-lowest">
+            <!-- Header Title -->
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-2 h-2 rounded-full bg-map-accent shadow-sm shadow-map-accent/50"></div>
+                    <span class="font-label-caps text-label-caps text-tertiary tracking-[0.15em] font-bold uppercase">EDIFÍCIO MAPEADO</span>
+                </div>
+                <h2 id="sidebarTitle" class="font-playfair text-[28px] sm:text-[34px] leading-tight text-on-surface tracking-tight">Endereço</h2>
+            </div>
+            
+            <!-- Information Sections -->
+            <div id="sidebarContent" class="flex flex-col gap-6"></div>
+        </div>
+        
+        <!-- Footer Persistent Actions -->
+        <div class="p-6 bg-white border-t border-border-subtle shrink-0">
+            <button id="googleMapsBtn" class="w-full hover:bg-on-surface/90 text-white font-body-md text-body-md font-semibold py-4 rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-on-surface/10 transition-all active:scale-[0.98] bg-[#F08200]">
+                <span class="material-symbols-outlined text-[20px]">explore</span>
+                ABRIR NO GOOGLE MAPS
+            </button>
+        </div>
+    </aside>
+
+</div>
+
+<script>
+const mapData = [{"Respons\u00e1vel": "Vit\u00f3rio", "Carimbo de data/hora": "2026-05-13 10:33:43.709000", "Setor do per\u00edmetro": "C", "N\u00famero da quadra": 4.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Abelardo Pinto, 62", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Rua Abelardo Pinto", "N\u00famero": "62", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "C4-1", "C\u00f3digo do edif\u00edcio correto": "C4-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "24h, sem indica\u00e7\u00e3o de dias da semana", "Foto da fachada": "https://drive.google.com/open?id=1WtFyH0qPDmVG5anw-lPFn6YCZO7trREz", "Foto dos pavimentos": "https://drive.google.com/open?id=1P3R97UeC7W1H1oepYoglKw_aphLFj_NJ", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "N\u00e3o h\u00e1 especifica\u00e7\u00e3o do hor\u00e1rio de funcionamento, apenas indica 24h", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.54352, "Longitude": -46.63725, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (street)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 10:52:29.512000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 8.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Flor\u00eancio de Abreu, 282", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua Flor\u00eancio de Abreu", "N\u00famero": "282", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D8-2", "C\u00f3digo do edif\u00edcio correto": "D8-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "24h durante a semana e fim de semana (Todos os dias, sem interrup\u00e7\u00e3o)", "Foto da fachada": "https://drive.google.com/open?id=1oYNbGW6Tp4hp1VkhvU5nyzOzUHziOQov", "Foto dos pavimentos": "https://drive.google.com/open?id=169KottSiiitPbNl3eqAtNERPARaaVnmD", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.541667, "Longitude": -46.6328124, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 10:57:58.456000", "Setor do per\u00edmetro": "C", "N\u00famero da quadra": 3.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua do Botic\u00e1rio, 109", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua do Botic\u00e1rio", "N\u00famero": "109", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "C3-3", "C\u00f3digo do edif\u00edcio correto": "C3-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "24h, sem indica\u00e7\u00e3o de dias da semana", "Foto da fachada": "https://drive.google.com/open?id=1kFUISyFC-tPuuBdul7SLHEtu2wykctlW", "Foto dos pavimentos": "https://drive.google.com/open?id=1YbUyu5rf2lob5LhwyejeCTqWPSDYNFn3", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "N\u00e3o h\u00e1 especifica\u00e7\u00e3o de dias da semana, apenas consta 24h", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.54185, "Longitude": -46.63908, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (street)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 10:58:49.184000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Flor\u00eancio de Abreu, 297", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Rua Flor\u00eancio de Abreu", "N\u00famero": "297", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D7-3", "C\u00f3digo do edif\u00edcio correto": "D7-2", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido fim de semana (Abre ou estende o funcionamento aos s\u00e1bados/domingos)", "Foto da fachada": "https://drive.google.com/open?id=1XCN54EVr8IbPGYrEcwNd6PUx5YIkjspa", "Foto dos pavimentos": "https://drive.google.com/open?id=1bRGgi98wdzNGyEzzbAnB4eUYiWGidNO7", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Ruim (Fachada com elevado grau de deteriora\u00e7\u00e3o, danos significativos ou precariedade construtiva)", "Latitude": -23.5415116, "Longitude": -46.6329299, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:04:28.632000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 3.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua basilio da gama n.29", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Bas\u00edlio da Gama", "N\u00famero": "29", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A3-1", "C\u00f3digo do edif\u00edcio correto": "A3-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1iQqD_J7EQjiodK883WiWlP-Y13ly-Qgs", "Foto dos pavimentos": "https://drive.google.com/open?id=13XMZEnkxHPLMM7I3xOXz3Z7zvKJPR7Us", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5447881, "Longitude": -46.6428023, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:24:51.038000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua xavier de toledo numero 88", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Xavier de Toledo", "N\u00famero": "88", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A7-1", "C\u00f3digo do edif\u00edcio correto": "A7-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1-sxKQJZuR-VrHWYcSABr0xKUfRwZJYh0", "Foto dos pavimentos": "https://drive.google.com/open?id=1ErqQtsZuwBnLvm18skVEWumhWBWekqo1", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5466889, "Longitude": -46.639448, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:36:58.749000", "Setor do per\u00edmetro": "C", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Santa Ifig\u00eania, 5", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Santa Ifig\u00eania", "N\u00famero": "5", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "C7-7", "C\u00f3digo do edif\u00edcio correto": "C7-3", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1TPLrx4sZmancv67cTu0a36AQTwEKnABG", "Foto dos pavimentos": "https://drive.google.com/open?id=13LMl0vQKcgPg7v6qI-on3_S34m3uRXCU", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "N\u00e3o foi poss\u00edvel identificar o n\u00famero do estacionamento, por isso utilizamos o n\u00famero do com\u00e9rcio ao lado direito.", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5414432, "Longitude": -46.6370762, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:37:31.574000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua xavier de toledo, 156", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Xavier de Toledo", "N\u00famero": "156", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A7-5", "C\u00f3digo do edif\u00edcio correto": "A7-5", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=11VE7eaJqNxDsd_x09oakhA9cape1sPeS", "Foto dos pavimentos": "https://drive.google.com/open?id=1MzFR4e106aFQi1d1B-LiKU91VEeif8tt", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5472152, "Longitude": -46.6397916, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:40:54.041000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "AV Prestes Maia, 548", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Avenida Prestes Maia", "N\u00famero": "548", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D7- 6", "C\u00f3digo do edif\u00edcio correto": "D7-4", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1cwTmUOTLbn2qHm5WZQKw9Kh1nsJaEH6I", "Foto dos pavimentos": "https://drive.google.com/open?id=1iW66fAStsNx7B3v7iB6cG6VkwQhn-FDU", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5397327, "Longitude": -46.6336172, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:44:02.617000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 8.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Avenida S\u00e3o Jo\u00e3o, 577", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Avenida S\u00e3o Jo\u00e3o", "N\u00famero": "577", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B8-2", "C\u00f3digo do edif\u00edcio correto": "B8-2", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno (Fecha mais tarde que o hor\u00e1rio comercial em dias \u00fateis)", "Foto da fachada": "https://drive.google.com/open?id=1T8QZ2vz1W02UI1R9Wee_sc_C80MjEPFV", "Foto dos pavimentos": "https://drive.google.com/open?id=1uF40lbEbxd6VcK6-uqhTekcINotkq3Qn", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5428449, "Longitude": -46.6396858, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "Daniella", "Carimbo de data/hora": "2026-05-13 11:49:03.837000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 8.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua S\u00e3o Jo\u00e3o, 597", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Avenida S\u00e3o Jo\u00e3o", "N\u00famero": "597", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B8-3", "C\u00f3digo do edif\u00edcio correto": "B8-3", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=12qTWMZLeLOpgprHqkHdttPMtByYuoGZG", "Foto dos pavimentos": "https://drive.google.com/open?id=1TZ7v5hfQj2FMkbzf2iXyD-8rLuIPs8Rr, https://drive.google.com/open?id=1A3hXgktDgEimQbXtF6wdH5ihZA0PHUaf", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5427689, "Longitude": -46.6398264, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 11:55:29.130000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 8.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua braulio gomes,81", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua Br\u00e1ulio Gomes", "N\u00famero": "81", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A8-4", "C\u00f3digo do edif\u00edcio correto": "A8-3", "Tipo de uso": "N\u00e3o foi poss\u00edvel identificar", "Hor\u00e1rio de funcionamento": "24h durante a semana (Segunda a sexta-feira)", "Foto da fachada": "https://drive.google.com/open?id=1tb1hPHAPGhqDX7NJAD9PEAc4WdwL-0_I", "Foto dos pavimentos": "https://drive.google.com/open?id=1rIaQx_T66fjIgADUIgIJJf-KIbigA7eP", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5467987, "Longitude": -46.641366, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 12:07:41.175000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Avenida S\u00e3o Jo\u00e3o, 465", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Avenida S\u00e3o Jo\u00e3o", "N\u00famero": "465", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B7-1", "C\u00f3digo do edif\u00edcio correto": "B7-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=1CAsLUxv2uWya6ma4UM0CapIjeMO8yXEw", "Foto dos pavimentos": "https://drive.google.com/open?id=1oOeOmlgjcLaClVfrSOQ95zkw-VXExyxb", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5433207, "Longitude": -46.63885, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 12:19:58.440000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Conselheiro Crispiniano, 347", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua Conselheiro Crispiniano", "N\u00famero": "347", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B7-4", "C\u00f3digo do edif\u00edcio correto": "B7-4", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=1l4RZOwfwq3Ky6qYxgXiJTVkEIGj-hDsk", "Foto dos pavimentos": "https://drive.google.com/open?id=1zey3-QMg_uTQa1njIvWTWmh97FzaNQQt", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5443303, "Longitude": -46.6385194, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 12:24:08.524000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Conselheiro Crispiniano, 333", "FILTRO - USO": "Ativo - Uso compartilhado (Residencial informal)", "Status no momento": "Ativo - Uso compartilhado (Residencial informal)", "Logradouro": "Rua Conselheiro Crispiniano", "N\u00famero": "333", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B7-5", "C\u00f3digo do edif\u00edcio correto": "B7-5", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1zsrZ7i3OqAsoUumDahyxTWIJ5cxBXnnY", "Foto dos pavimentos": "https://drive.google.com/open?id=1JnIL0CqR_I_dE9FSRp3twYkWyUnJ4W-m", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5444155, "Longitude": -46.6385841, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 12:27:08.636000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Conselheiro Crispiniano, 325", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua Conselheiro Crispiniano", "N\u00famero": "325", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B7-6", "C\u00f3digo do edif\u00edcio correto": "B7-6", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=12bslil5BKl6Q8b_51AVfNYgskaFOdY8z", "Foto dos pavimentos": "https://drive.google.com/open?id=1j8SHuwyaQykHdJMowm1n_L1V8_48w-Sn", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5444727, "Longitude": -46.6386279, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 12:30:10.654000", "Setor do per\u00edmetro": "B", "N\u00famero da quadra": 7.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Conselheiro Crispiniano, 311", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua Conselheiro Crispiniano", "N\u00famero": "311", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "B7-7", "C\u00f3digo do edif\u00edcio correto": "B7-7", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=1bzurLmxV1cpt3V7ql7wVk960UeTo54LZ", "Foto dos pavimentos": "https://drive.google.com/open?id=1uCb57deENajaweHDfqTuiPJn9mThZRtD", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5445874, "Longitude": -46.6387192, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 13:44:27.195000", "Setor do per\u00edmetro": "C", "N\u00famero da quadra": 16.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Alfredo Issa, 48", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Pra\u00e7a Alfredo Issa", "N\u00famero": "48", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "C16-10", "C\u00f3digo do edif\u00edcio correto": "C16-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "24h durante a semana (Segunda a sexta-feira)", "Foto da fachada": "https://drive.google.com/open?id=1Q5iA_8LfH076doocrdKqWfHLqBbAXawO", "Foto dos pavimentos": "https://drive.google.com/open?id=1tReiGYnV6oQoQskWNAjY6RMZoYmCGru_", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "N\u00e3o h\u00e1 especifica\u00e7\u00e3o do hor\u00e1rio de funcionamento, apenas indica 24h ", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5392604, "Longitude": -46.6364624, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (other)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 14:11:31.880000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 1.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Largo do Paissand\u00fa, 62", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Largo do Paissandu", "N\u00famero": "62", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D1- 8 ", "C\u00f3digo do edif\u00edcio correto": "D1-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1HSBORW5wkRmrP2RnuFOTMFlo7ZD9w1ur", "Foto dos pavimentos": "https://drive.google.com/open?id=1qvF1U_FihKppuxVDUjpuv2lfDR-2mLW5", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5432301, "Longitude": -46.6376156, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 14:20:40.810000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 2.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Avenida Prestes Maia, 312", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Avenida Prestes Maia", "N\u00famero": "312", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D2- 9 ", "C\u00f3digo do edif\u00edcio correto": "D2-2", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=10n8bzU2HebumwytnhEO3kwQ8hUooh3-5", "Foto dos pavimentos": "https://drive.google.com/open?id=1XQ-wh_kuH5PSpCG5sYVXmQTTbqddQV9W", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5423394, "Longitude": -46.6344742, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "Jessica", "Carimbo de data/hora": "2026-05-13 14:57:52.294000", "Setor do per\u00edmetro": "C", "N\u00famero da quadra": 12.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Brigadeiro Tobias, 148", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua Brigadeiro Tobias", "N\u00famero": "148", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "C12-17", "C\u00f3digo do edif\u00edcio correto": "C12-2", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1FRXJcUETJIgMQyNqPnEodqJFwEEa7GuS", "Foto dos pavimentos": "https://drive.google.com/open?id=1VDrIQ_Q4vOftTUTBSFjKH9rYGXnETVt3", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Ruim (Fachada com elevado grau de deteriora\u00e7\u00e3o, danos significativos ou precariedade construtiva)", "Latitude": -23.5417466, "Longitude": -46.6358113, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-13 15:14:24.509000", "Setor do per\u00edmetro": "D", "N\u00famero da quadra": 2.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua libero Badar\u00f3, 589", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua L\u00edbero Badar\u00f3", "N\u00famero": "589", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "D2-14", "C\u00f3digo do edif\u00edcio correto": "D2-6", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1jWmXviiv_YuNKCbQBegChI3N5wNYlnmm", "Foto dos pavimentos": "https://drive.google.com/open?id=1TX4tCa_lc39bpOowwP0DCu9rVcsDOAbG", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5447148, "Longitude": -46.63523, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 10:28:43.660000", "Setor do per\u00edmetro": "G", "N\u00famero da quadra": 10.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Roberto Simonsen, 88", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Roberto Simonsen", "N\u00famero": "88", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "G10-1", "C\u00f3digo do edif\u00edcio correto": "G10-1", "Tipo de uso": "N\u00e3o foi poss\u00edvel identificar", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1n8wGG6QwaNEcthuc2bJFZWC86w-saF1I", "Foto dos pavimentos": "https://drive.google.com/open?id=1NHur0xs3HsPulahru4Wt3Nn0kJla3zPc", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5490569, "Longitude": -46.6321322, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 10:31:52.051000", "Setor do per\u00edmetro": "H", "N\u00famero da quadra": 1.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Libero Badar\u00f3, 89", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua L\u00edbero Badar\u00f3", "N\u00famero": "89", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "H1-3", "C\u00f3digo do edif\u00edcio correto": "H1-3", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1HGbM8SFesW-L5A6pk1LEgPkl2fNqPkTO", "Foto dos pavimentos": "https://drive.google.com/open?id=1Ka5ebKx9b667IaOhFFwan2gLzeu60T7T", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5486672, "Longitude": -46.6375875, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 10:43:44.641000", "Setor do per\u00edmetro": "H", "N\u00famero da quadra": 3.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua S\u00e3o Francisco, 87", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua S\u00e3o Francisco", "N\u00famero": "87", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "H3-4", "C\u00f3digo do edif\u00edcio correto": "H3-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=12oVvsJQ0-Re8oQjQ8cmnv0uH6rlVKKX5", "Foto dos pavimentos": "https://drive.google.com/open?id=1ZrkqRjg1QxRlkjBAds_PZzVi1HNKqJhN", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5489031, "Longitude": -46.63825, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 10:54:51.237000", "Setor do per\u00edmetro": "H", "N\u00famero da quadra": 5.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua S\u00e3o Francisco, 23", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua S\u00e3o Francisco", "N\u00famero": "23", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "H6-5", "C\u00f3digo do edif\u00edcio correto": "H5-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido fim de semana (Abre ou estende o funcionamento aos s\u00e1bados/domingos)", "Foto da fachada": "https://drive.google.com/open?id=18Bue_Cjw8qKvnCizheZrfRTjhOs5BUa-", "Foto dos pavimentos": "https://drive.google.com/open?id=1MnIj1uEZzNhRDUstbhA-34N7lBHPQa8n", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5495152, "Longitude": -46.637629, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 11:11:44.742000", "Setor do per\u00edmetro": "H", "N\u00famero da quadra": 12.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Riachuelo, 209", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua Riachuelo", "N\u00famero": "209", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "H12-6", "C\u00f3digo do edif\u00edcio correto": "H12-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=15ZKYx5muwwChqZedxcdU1HnxWaFiXx1U", "Foto dos pavimentos": "https://drive.google.com/open?id=1rLsZQELIZGXeNnmysl6yOuLO9lNUw2-H", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5504556, "Longitude": -46.6372401, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 11:23:43.653000", "Setor do per\u00edmetro": "F", "N\u00famero da quadra": "", "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "PRACA DA SE 100", "FILTRO - USO": "", "Status no momento": "N\u00e3o foi poss\u00edvel identificar", "Logradouro": "Pra\u00e7a da S\u00e9", "N\u00famero": "100", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "F14 1", "C\u00f3digo do edif\u00edcio correto": "F14-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1TdjYIszDSQ3AUYS-noeW0rOpELLr6fza", "Foto dos pavimentos": "https://drive.google.com/open?id=1UCOGFsxgUQQW708eMKthgTxmNUMTp-S5", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5498492, "Longitude": -46.6340895, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 11:33:18.641000", "Setor do per\u00edmetro": "F", "N\u00famero da quadra": 13.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Benjamin Constant 196", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Benjamin Constant", "N\u00famero": "196", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "F13,1", "C\u00f3digo do edif\u00edcio correto": "F13-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno (Fecha mais tarde que o hor\u00e1rio comercial em dias \u00fateis)", "Foto da fachada": "https://drive.google.com/open?id=1CVLDO1RaufjJlJy2_8x9uTDJp_25YG9f", "Foto dos pavimentos": "https://drive.google.com/open?id=1FcffLKMpya8pe6Um-fYVI2xZ8nAVPu-Q", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.54944, "Longitude": -46.636, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (street)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 12:34:20.778000", "Setor do per\u00edmetro": "G", "N\u00famero da quadra": 27.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Luis Teixeira, 180", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua Lu\u00eds Teixeira", "N\u00famero": "180", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "G27-13", "C\u00f3digo do edif\u00edcio correto": "G27-4", "Tipo de uso": "N\u00e3o foi poss\u00edvel identificar", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "Foto da fachada": "https://drive.google.com/open?id=1exQBiy4bAC1sfWhADQlCE2ci1MbpogRf", "Foto dos pavimentos": "https://drive.google.com/open?id=1banI88OQQ-SrvgCIYl1sUrpQTlygxe49", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Ruim (Fachada com elevado grau de deteriora\u00e7\u00e3o, danos significativos ou precariedade construtiva)", "Latitude": -23.54808, "Longitude": -46.63134, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 12:45:43.907000", "Setor do per\u00edmetro": "G", "N\u00famero da quadra": 31.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Doutor Bittencourt Rodrigues, 234", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Doutor Bittencourt Rodrigues", "N\u00famero": "234", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "G31-16", "C\u00f3digo do edif\u00edcio correto": "G31-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=16gf2aNe6q8cSvNOUUp-0tCZiuoi99DJM", "Foto dos pavimentos": "https://drive.google.com/open?id=1Mj_yDxR8rJZq_QUNh_Du6JtWgS24ddGk", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5487396, "Longitude": -46.6312917, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (street)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 14:10:06.361000", "Setor do per\u00edmetro": "G", "N\u00famero da quadra": 11.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Boa Vsta, 75", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Boa Vista", "N\u00famero": "63", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "G11-17", "C\u00f3digo do edif\u00edcio correto": "G11-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1nhodIZXGe3ftbFaa3XL_ZzBXaJr6GdYF", "Foto dos pavimentos": "https://drive.google.com/open?id=1yQKafBkeoDzvMIESxHL8-z3INuAIvm8d", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "Subterr\u00e2neo e andar acima", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5471853, "Longitude": -46.6334221, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-15 14:15:24.726000", "Setor do per\u00edmetro": "G", "N\u00famero da quadra": 2.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Boa Vista,192", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua Boa Vista", "N\u00famero": "192", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "G2-18", "C\u00f3digo do edif\u00edcio correto": "G2-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1-So-5ma-0oHjHC_cCocfRflfQYe1NEaI", "Foto dos pavimentos": "https://drive.google.com/open?id=1DNufx3wxVOdlX4p2SIrWS7ydphv_UtH3", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5460243, "Longitude": -46.6334424, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 10:43:15.648000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 10.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua \u00c1lvaro de Carvalho 40", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua \u00c1lvaro de Carvalho", "N\u00famero": "40", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A10-1", "C\u00f3digo do edif\u00edcio correto": "A10-1", "Tipo de uso": "N\u00e3o foi poss\u00edvel identificar", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1Qf3pVypzXxhyWGPmFgVLgA1y9d10T2X0", "Foto dos pavimentos": "https://drive.google.com/open?id=1mvelVS9f5rSZLiCVxeiq6jzvOYcCd5dj", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5484054, "Longitude": -46.6406346, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 10:46:08.396000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 11.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua \u00c1lvaro de Carvalho, 151", "FILTRO - USO": "Ativo - Uso compartilhado (Outros)", "Status no momento": "Ativo - Uso compartilhado (Outros)", "Logradouro": "Rua \u00c1lvaro de Carvalho", "N\u00famero": "151", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A11-1", "C\u00f3digo do edif\u00edcio correto": "A11-1", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1_tHSYoJjIQzOw1X7qfBL_AFMBFgU0OHo", "Foto dos pavimentos": "https://drive.google.com/open?id=1_v61mfEY9adbC2d6GxUquxZDw3HF1lQc", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5488175, "Longitude": -46.6416545, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 10:50:40.529000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 10.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua alvaro de Carvalho 164", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua \u00c1lvaro de Carvalho", "N\u00famero": "164", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A10-3", "C\u00f3digo do edif\u00edcio correto": "A10-3", "Tipo de uso": "Misto (Ambas as op\u00e7\u00f5es)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=11_-GTycfCH_kuV9IYmvQbSexcQQ8Apq0", "Foto dos pavimentos": "https://drive.google.com/open?id=1gm5ajpSDbtH_LBVfY-217Q7AUP511W5r", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5488355, "Longitude": -46.6419709, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 11:06:26.046000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 10.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua da consolacao 15", "FILTRO - USO": "Ativo - Pr\u00e9dio ocioso", "Status no momento": "Ativo - Pr\u00e9dio ocioso", "Logradouro": "Rua da Consola\u00e7\u00e3o", "N\u00famero": 13, "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A10-5", "C\u00f3digo do edif\u00edcio correto": "A10-5", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1QjDuCxn9N1T9KUE_MXkpAaX8qPh_pSu2", "Foto dos pavimentos": "https://drive.google.com/open?id=1pNTr2gY6Ci791w8cmF1KZOwmaqg0Lu0O", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5479711, "Longitude": -46.6414575, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 11:09:59.088000", "Setor do per\u00edmetro": "A", "N\u00famero da quadra": 10.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Quirino de Andrade 237", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua Quirino de Andrade", "N\u00famero": "237", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "A10-6", "C\u00f3digo do edif\u00edcio correto": "A10-6", "Tipo de uso": "N\u00e3o foi poss\u00edvel identificar", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1itbKCpmkCYRhtshSjWYNvnSCjKxIXDDd", "Foto dos pavimentos": "https://drive.google.com/open?id=18ZXhD3sC4kR66ZN0AMejH2eMGqhOtL9_", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "S\u00f3 garagem ", "Estado de conserva\u00e7\u00e3o aparente": "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Latitude": -23.5479303, "Longitude": -46.6411934, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 12:08:05.402000", "Setor do per\u00edmetro": "H", "N\u00famero da quadra": 22.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua Santo Ant\u00f4nio, 184/182", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua Santo Ant\u00f4nio", "N\u00famero": "184/182", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "H22-2", "C\u00f3digo do edif\u00edcio correto": "H22-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "N\u00e3o foi poss\u00edvel identificar", "Foto da fachada": "https://drive.google.com/open?id=1y4k77pDYsI0gObQ-U53GeSIlN0h3Mj5n", "Foto dos pavimentos": "https://drive.google.com/open?id=1ktORvODRjTaZ6e6j7ZNRn5z7wdgvMUzq", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.549568, "Longitude": -46.6406599, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "Rep\u00fablica"}, {"Respons\u00e1vel": "", "Carimbo de data/hora": "2026-05-18 12:46:19.890000", "Setor do per\u00edmetro": "E", "N\u00famero da quadra": 4.0, "Endere\u00e7o (ex: Rua Libero Badar\u00f3, 293)": "Rua da cantareira 403", "FILTRO - USO": "Ativo - Pr\u00e9dio inteiro estacionamento", "Status no momento": "Ativo - Pr\u00e9dio inteiro estacionamento", "Logradouro": "Rua da Cantareira", "N\u00famero": "403", "Munic\u00edpio": "S\u00e3o Paulo", "UF": "SP", "C\u00f3digo do edif\u00edcio (Setor + Quadra - n\u00ba do Registro) (ex: A12-3)": "E4-1", "C\u00f3digo do edif\u00edcio correto": "E4-1", "Tipo de uso": "Rotativo (Pago por hora ou per\u00edodo utilizado)", "Hor\u00e1rio de funcionamento": "Hor\u00e1rio estendido fim de semana (Abre ou estende o funcionamento aos s\u00e1bados/domingos)", "Foto da fachada": "https://drive.google.com/open?id=1AhvVJbXgdmhDSKg6LsqdBYIf6YbBt0Z4", "Foto dos pavimentos": "https://drive.google.com/open?id=1gaMUmdeR79GVG-NaGLTA1kWB06-472Zd", "Coluna 10": "", "Observa\u00e7\u00f5es: ": "", "Estado de conserva\u00e7\u00e3o aparente": "Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Latitude": -23.5406778, "Longitude": -46.6297089, "Fonte de Geolocaliza\u00e7\u00e3o": "Photon (house)", "Categoriza\u00e7\u00e3o": "", "Bairro": "S\u00e9"}];
+const filterOptions = {"Bairro": ["Rep\u00fablica", "S\u00e9"], "Status no momento": ["Ativo - Pr\u00e9dio inteiro estacionamento", "Ativo - Pr\u00e9dio ocioso", "Ativo - Uso compartilhado (Outros)", "Ativo - Uso compartilhado (Residencial informal)", "N\u00e3o foi poss\u00edvel identificar"], "Tipo de uso": ["Mensalista (Plano mensal com pagamento fixo)", "Misto (Ambas as op\u00e7\u00f5es)", "N\u00e3o foi poss\u00edvel identificar", "Rotativo (Pago por hora ou per\u00edodo utilizado)"], "Hor\u00e1rio de funcionamento": ["24h durante a semana (Segunda a sexta-feira)", "24h durante a semana e fim de semana (Todos os dias, sem interrup\u00e7\u00e3o)", "24h, sem indica\u00e7\u00e3o de dias da semana", "Hor\u00e1rio comercial (8h \u00e0s 18h de segunda \u00e0 sexta)", "Hor\u00e1rio estendido fim de semana (Abre ou estende o funcionamento aos s\u00e1bados/domingos)", "Hor\u00e1rio estendido noturno (Fecha mais tarde que o hor\u00e1rio comercial em dias \u00fateis)", "Hor\u00e1rio estendido noturno e fim de semana (Fecha mais tarde nos dias \u00fateis e abre nos fins de semana)", "N\u00e3o foi poss\u00edvel identificar"], "Estado de conserva\u00e7\u00e3o aparente": ["Bom (Fachada em excelente estado aparente, sem danos vis\u00edveis, destacamentos ou fissuras)", "Regular (Fachada com sinais de desgaste ou deteriora\u00e7\u00f5es pontuais, sem grande comprometimento estrutural e visual)", "Ruim (Fachada com elevado grau de deteriora\u00e7\u00e3o, danos significativos ou precariedade construtiva)"]};
+const HOME_LAT = -23.5455342275;
+const HOME_LON = -46.6372071025;
+
+let mapInstance = null;
+let markersRegistry = []; 
+
+function toggleMainSidebar() {
+    const el = document.getElementById('mainSidebar');
+    if (el.classList.contains('-translate-x-[120%]')) {
+        el.classList.remove('-translate-x-[120%]');
+        el.classList.add('translate-x-0');
+    } else {
+        el.classList.add('-translate-x-[120%]');
+        el.classList.remove('translate-x-0');
+    }
+}
+
+let currentImages = []; let currentImgIndex = 0; const defaultImage = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop';
+const colunasPermitidas = ['Bairro', 'Município', 'Status no momento', 'Tipo de uso', 'Horário de funcionamento', 'Estado de conservação aparente', 'Fonte de Geolocalização'];
+
+function converteLinkDrive(url) {
+    if (!url || typeof url !== 'string' || url.trim() === '') return null;
+    let fileId = '';
+    if (url.includes('id=')) fileId = url.split('id=')[1].split('&')[0];
+    else if (url.includes('/d/')) fileId = url.split('/d/')[1].split('/')[0];
+    if (fileId) return `https://lh3.googleusercontent.com/d/${fileId}`;
+    return url.startsWith('http') ? url : null;
+}
+
+function updateSlider() {
+    const imgDiv = document.getElementById('sidebarImage'); const controls = document.getElementById('sliderControls'); const badge = document.getElementById('sliderBadge');
+    if (currentImages.length > 0) {
+        imgDiv.style.backgroundImage = `url('${currentImages[currentImgIndex]}')`;
+        if (currentImages.length > 1) { controls.classList.remove('hidden'); badge.innerText = `${currentImgIndex + 1}/${currentImages.length}`; }
+        else { controls.classList.add('hidden'); }
+    } else { imgDiv.style.backgroundImage = `url('${defaultImage}')`; controls.classList.add('hidden'); }
+}
+function nextImage() { if (currentImages.length > 1) { currentImgIndex = (currentImgIndex + 1) % currentImages.length; updateSlider(); } }
+function prevImage() { if (currentImages.length > 1) { currentImgIndex = (currentImgIndex - 1 + currentImages.length) % currentImages.length; updateSlider(); } }
+
+function openSidebar(data) {
+    currentImages = []; currentImgIndex = 0;
+    const imgF = converteLinkDrive(data['Foto da fachada']); const imgP = converteLinkDrive(data['Foto dos pavimentos']);
+    if (imgF) currentImages.push(imgF); if (imgP) currentImages.push(imgP);
+    updateSlider();
+
+    let logradouro = data['Logradouro'] || ''; let numero = data['Número'] ? `, ${data['Número']}` : ''; let enderecoCompleto = `${logradouro}${numero}`;
+    if (!enderecoCompleto.trim() || enderecoCompleto.trim() === ',') enderecoCompleto = data['Endereço (ex: Rua Libero Badaró, 293)'] || 'Sem Endereço';
+    document.getElementById('sidebarTitle').innerText = enderecoCompleto;
+    
+    const mapsQuery = encodeURIComponent(`${enderecoCompleto}, São Paulo`);
+    document.getElementById('googleMapsBtn').onclick = () => window.open(`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`, '_blank');
+    
+    let contentHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">';
+    const bairro = data['Bairro'] || '-';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-4 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-2 text-tertiary"><span class="material-symbols-outlined text-[18px]">location_city</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">BAIRRO</h3></div><p class="font-body-md text-body-lg text-on-surface font-medium">${bairro}</p></div>`;
+    const municipio = data['Município'] || 'São Paulo';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-4 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-2 text-tertiary"><span class="material-symbols-outlined text-[18px]">map</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">MUNICÍPIO</h3></div><p class="font-body-md text-body-lg text-on-surface font-medium">${municipio}</p></div></div>`;
+    const status = data['Status no momento'] || '-';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-5 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-3 text-tertiary"><span class="material-symbols-outlined text-[18px]">info</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">STATUS NO MOMENTO</h3></div><p class="font-body-md text-body-md text-on-surface leading-relaxed">${status}</p></div>`;
+    const uso = data['Tipo de uso'] || '-';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-5 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-3 text-tertiary"><span class="material-symbols-outlined text-[18px]">directions_car</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">TIPO DE USO</h3></div><p class="font-body-md text-body-md text-on-surface leading-relaxed">${uso}</p></div>`;
+    const horario = data['Horário de funcionamento'] || '-';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-5 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-3 text-tertiary"><span class="material-symbols-outlined text-[18px]">schedule</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">HORÁRIO DE FUNCIONAMENTO</h3></div><p class="font-body-md text-body-md text-on-surface leading-relaxed">${horario}</p></div>`;
+    const cons = data['Estado de conservação aparente'] || '-';
+    contentHtml += `<div class="bg-surface border border-border-subtle/40 rounded-xl p-5 transition-all hover:border-map-accent/30 hover:shadow-sm"><div class="flex items-center gap-2 mb-3 text-tertiary"><span class="material-symbols-outlined text-[18px]">verified</span><h3 class="font-label-caps text-label-caps font-bold tracking-wider text-[#F08200]">ESTADO DE CONSERVAÇÃO</h3></div><p class="font-body-md text-body-md text-on-surface leading-relaxed">${cons}</p></div>`;
+    const fonte = data['Fonte de Geolocalização'] || '-';
+    contentHtml += `<div class="mt-4 pt-4 border-t border-border-subtle/20 flex items-center justify-between"><div class="flex flex-col"><h3 class="font-label-caps text-[10px] text-[#F08200] font-bold tracking-widest mb-1">FONTE DE GEOLOCALIZAÇÃO</h3><p class="font-mono-data text-mono-data text-tertiary">${fonte}</p></div></div>`;
+
+    document.getElementById('sidebarContent').innerHTML = contentHtml;
+    document.getElementById('sidebarPanel').classList.remove('translate-x-[120%]');
+    document.getElementById('sidebarPanel').classList.add('translate-x-0');
+}
+function closeSidebar() { 
+    document.getElementById('sidebarPanel').classList.add('translate-x-[120%]');
+    document.getElementById('sidebarPanel').classList.remove('translate-x-0');
+}
+function recenterMap() { if(mapInstance) { mapInstance.flyTo([HOME_LAT, HOME_LON], 14, { duration: 1.5 }); } }
+
+let activeFilters = {};
+
+function initActiveFilters() {
+    Object.keys(filterOptions).forEach(col => activeFilters[col] = new Set());
+}
+
+function renderChips() {
+    let html = '';
+    Object.keys(activeFilters).forEach(colName => {
+        activeFilters[colName].forEach(val => {
+            html += `<span class="inline-flex items-center gap-1 bg-map-accent/10 text-map-accent border border-map-accent/30 rounded-full px-3 py-1 font-mono-data text-mono-data uppercase cursor-pointer group" onclick="toggleFilterValue('${colName}', '${val.replace(/'/g, "\\'")}')">
+                        ${val.substring(0,18)}${val.length>18?'...':''}
+                        <button class="group-hover:text-primary-container transition-colors flex items-center justify-center"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                     </span>`;
+        });
+    });
+    document.getElementById('activeChips').innerHTML = html;
+}
+
+function updateMetrics(visibleItems) {
+    const total = visibleItems.length;
+    const ativos = visibleItems.filter(item => {
+        const status = String(item.data['Status no momento'] || '').toLowerCase();
+        return status.includes('ativo');
+    }).length;
+    const bom = visibleItems.filter(item => String(item.data['Estado de conservação aparente']).toLowerCase().includes('bom')).length;
+    
+    document.getElementById('metricsContainer').innerHTML = `
+        <div class="bg-surface rounded-lg p-3 border border-border-subtle text-center flex flex-col justify-center items-center">
+            <span class="font-label-caps text-label-caps text-tertiary mb-1">MAPEADOS</span>
+            <span class="font-headline-md text-headline-md text-on-surface">${total}</span>
+        </div>
+        <div class="bg-surface rounded-lg p-3 border border-border-subtle text-center flex flex-col justify-center items-center">
+            <span class="font-label-caps text-label-caps text-tertiary mb-1">ATIVOS</span>
+            <span class="font-headline-md text-headline-md text-on-surface">${ativos}</span>
+        </div>
+        <div class="bg-surface rounded-lg p-3 border border-border-subtle text-center flex flex-col justify-center items-center">
+            <span class="font-label-caps text-label-caps text-tertiary mb-1">CONSERVADOS</span>
+            <span class="font-headline-md text-headline-md text-on-surface">${bom}</span>
+        </div>
+    `;
+}
+
+function toggleFilterDropdown(colId, event) {
+    const el = document.getElementById(`dropdown-${colId}`);
+    if(el) {
+        el.classList.toggle('hidden');
+        const icon = document.getElementById(`icon-${colId}`);
+        if (icon) {
+            icon.innerText = el.classList.contains('hidden') ? 'keyboard_arrow_down' : 'keyboard_arrow_up';
+        }
+    }
+    if (event) event.stopPropagation();
+}
+
+function toggleFilterValue(colName, val) {
+    const colId = colName.replace(/\s+/g, '_');
+    const set = activeFilters[colName];
+    
+    if (val === 'ALL') {
+        set.clear();
+        document.querySelectorAll(`.filter-checkbox-${colId}`).forEach(cb => cb.checked = false);
+        const allCb = document.getElementById(`cb-all-${colId}`);
+        if(allCb) allCb.checked = true;
+    } else {
+        if (set.has(val)) {
+            set.delete(val);
+            const cb = Array.from(document.querySelectorAll(`.filter-checkbox-${colId}`)).find(c => c.value === val);
+            if(cb) cb.checked = false;
+        } else {
+            set.add(val);
+            const cb = Array.from(document.querySelectorAll(`.filter-checkbox-${colId}`)).find(c => c.value === val);
+            if(cb) cb.checked = true;
+        }
+        
+        const allCb = document.getElementById(`cb-all-${colId}`);
+        if(allCb) {
+            allCb.checked = set.size === 0;
+        }
+    }
+    
+    const nameEl = document.getElementById(`label-name-${colId}`);
+    if(nameEl) {
+        if (set.size > 0) {
+            nameEl.classList.add('text-map-accent');
+            nameEl.classList.remove('text-on-surface');
+        } else {
+            nameEl.classList.remove('text-map-accent');
+            nameEl.classList.add('text-on-surface');
+        }
+    }
+    
+    applyFilters();
+}
+
+function buildFilters() {
+    initActiveFilters();
+    let html = '';
+    Object.keys(filterOptions).forEach(colName => {
+        const ops = filterOptions[colName]; if (ops.length === 0) return;
+        const colId = colName.replace(/\s+/g, '_');
+        html += `
+        <div class="flex flex-col border-b border-border-subtle py-3 relative filter-accordion">
+            <div class="w-full bg-transparent font-body-md text-[15px] font-bold text-on-surface cursor-pointer flex justify-between items-center transition-colors group" onclick="toggleFilterDropdown('${colId}', event)">
+                <span id="label-name-${colId}" class="truncate group-hover:text-map-accent transition-colors">${colName}</span>
+                <span id="icon-${colId}" class="material-symbols-outlined text-[20px] text-on-surface border border-on-surface/30 rounded-full group-hover:border-map-accent group-hover:text-map-accent transition-all p-0.5">keyboard_arrow_down</span>
+            </div>
+            <div id="dropdown-${colId}" class="filter-dropdown hidden w-full bg-transparent mt-3 custom-scrollbar flex flex-col gap-1 max-h-60 overflow-y-auto">
+                <label class="flex items-center gap-2.5 p-2 hover:bg-surface-container rounded cursor-pointer transition-colors">
+                    <input type="checkbox" id="cb-all-${colId}" value="ALL" class="w-4 h-4 rounded border-outline text-map-accent focus:ring-map-accent cursor-pointer" onchange="toggleFilterValue('${colName}', 'ALL')" checked>
+                    <span class="text-[14px] font-medium text-on-surface">Todos</span>
+                </label>
+        `;
+        ops.forEach(opt => {
+            const escapedOpt = opt.replace(/'/g, "\\'");
+            html += `
+                <label class="flex items-start gap-2.5 p-2 hover:bg-surface-container rounded cursor-pointer transition-colors">
+                    <input type="checkbox" value="${escapedOpt}" class="w-4 h-4 rounded border-outline text-map-accent focus:ring-map-accent filter-checkbox-${colId} mt-0.5 cursor-pointer" onchange="toggleFilterValue('${colName}', '${escapedOpt}')">
+                    <span class="text-[14px] leading-snug text-on-surface">${opt}</span>
+                </label>
+            `;
+        });
+        html += `</div></div>`;
+    });
+    document.getElementById('filterContainer').innerHTML = html;
+}
+
+function applyFilters() {
+    closeSidebar();
+    const searchTxt = document.getElementById('searchInput').value.toLowerCase().trim();
+    let countAtivos = 0; let visibleItems = [];
+
+    markersRegistry.forEach(item => {
+        let show = true;
+        if (searchTxt) {
+            const indexText = [item.data['Logradouro'], item.data['Endereço (ex: Rua Libero Badaró, 293)'], item.data['Código do edifício correto']].join(' ').toLowerCase();
+            if (!indexText.includes(searchTxt)) show = false;
+        }
+        if (show) {
+            Object.keys(filterOptions).forEach(colName => {
+                const set = activeFilters[colName];
+                if (set && set.size > 0) {
+                    if (!set.has(String(item.data[colName]))) {
+                        show = false;
+                    }
+                }
+            });
+        }
+        if (show) {
+            if (!mapInstance.hasLayer(item.layer)) mapInstance.addLayer(item.layer);
+            countAtivos++; visibleItems.push(item);
+            
+            if (item.layer.options.className !== 'marker-animate') {
+                item.layer.setStyle({ className: 'marker-animate' });
+            }
+            if (item.layer._path) {
+                item.layer._path.style.animation = 'none';
+                void item.layer._path.offsetWidth;
+                item.layer._path.style.animation = '';
+            }
+        } else {
+            if (mapInstance.hasLayer(item.layer)) mapInstance.removeLayer(item.layer);
+        }
+    });
+
+    document.getElementById('counterBadge').innerText = `${countAtivos} ativos encontrados`;
+    renderChips(); updateMetrics(visibleItems);
+}
+
+function resetFilters() { 
+    Object.keys(activeFilters).forEach(colName => {
+        activeFilters[colName].clear();
+        const colId = colName.replace(/\s+/g, '_');
+        const allCb = document.getElementById(`cb-all-${colId}`);
+        if (allCb) allCb.checked = true;
+        document.querySelectorAll(`.filter-checkbox-${colId}`).forEach(cb => cb.checked = false);
+        
+        const nameEl = document.getElementById(`label-name-${colId}`);
+        if (nameEl) {
+            nameEl.classList.remove('text-map-accent');
+            nameEl.classList.add('text-on-surface');
+        }
+    });
+    document.getElementById('searchInput').value = ''; 
+    applyFilters(); 
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    buildFilters();
+    const attachEvents = setInterval(() => {
+        for (let key in window) {
+            if (key.startsWith('map_') && window[key] instanceof L.Map) {
+                mapInstance = window[key];
+                
+                // Add padding to map so it respects the sidebars (roughly)
+                mapInstance.getContainer().style.width = '100vw';
+                mapInstance.getContainer().style.height = '100vh';
+                mapInstance.invalidateSize();
+                
+                if (mapInstance.zoomControl) {
+                    mapInstance.zoomControl.setPosition('bottomright');
+                }
+
+                mapInstance.eachLayer((layer) => {
+                    if (layer instanceof L.CircleMarker) {
+                        const lat = layer.getLatLng().lat; const lng = layer.getLatLng().lng;
+                        const data = mapData.find(d => Math.abs(d.Latitude - lat) < 0.0001 && Math.abs(d.Longitude - lng) < 0.0001);
+                        
+                        if (data) {
+                            let corPin = '#F08200';
+                            let filtroVal = String(data['FILTRO - USO'] || '');
+                            if (filtroVal.includes('inteiro estacionamento')) corPin = '#007BFF';
+                            else if (filtroVal.includes('ocioso')) corPin = '#28a745';
+                            else if (filtroVal.includes('informal')) corPin = '#28a745';
+                            
+                            layer.setStyle({ fillColor: corPin, color: '#FFFFFF', fillOpacity: 0.8, opacity: 1.0, weight: 1.5 });
+                            markersRegistry.push({ layer: layer, data: data });
+                            
+                            if (!layer.hasSidebarEvent) {
+                                layer.on('click', function(e) { openSidebar(data); mapInstance.flyTo([lat, lng], 16, { animate: true, duration: 1 }); });
+                                layer.hasSidebarEvent = true;
+                            }
+                        }
+                    }
+                });
+                
+                if (markersRegistry.length > 0) {
+                    clearInterval(attachEvents);
+                    applyFilters();
+                }
+            }
+        }
+    }, 500);
+});
+</script>
+    
+            <div class="folium-map" id="map_7fa2f1ea8b62b7353d314eb06a1c442e" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_7fa2f1ea8b62b7353d314eb06a1c442e = L.map(
+                "map_7fa2f1ea8b62b7353d314eb06a1c442e",
+                {
+                    center: [-23.5455342275, -46.6372071025],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 15,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_91959f2f61f45bd3fde95cb566ca6b03 = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_91959f2f61f45bd3fde95cb566ca6b03.addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+        function geo_json_325e77f241571e0e78f21a3ca1188d31_styler(feature) {
+            switch(feature.id) {
+                default:
+                    return {"color": "#00506E", "dashArray": "6, 6", "fillColor": "#00506E", "fillOpacity": 0.05, "weight": 3};
+            }
+        }
+
+        function geo_json_325e77f241571e0e78f21a3ca1188d31_onEachFeature(feature, layer) {
+
+            layer.on({
+            });
+        };
+        var geo_json_325e77f241571e0e78f21a3ca1188d31 = L.geoJson(null, {
+                onEachFeature: geo_json_325e77f241571e0e78f21a3ca1188d31_onEachFeature,
+            
+                style: geo_json_325e77f241571e0e78f21a3ca1188d31_styler,
+            ...{
+}
+        });
+
+        function geo_json_325e77f241571e0e78f21a3ca1188d31_add (data) {
+            geo_json_325e77f241571e0e78f21a3ca1188d31
+                .addData(data);
+        }
+            geo_json_325e77f241571e0e78f21a3ca1188d31_add({"bbox": [-46.644376875024136, -23.552657935731006, -46.62792243554739, -23.538872901528464], "features": [{"bbox": [-46.644376875024136, -23.552657935731006, -46.62792243554739, -23.538872901528464], "geometry": {"coordinates": [[[-46.62792243554739, -23.539876114008408], [-46.62975805878423, -23.54011238946137], [-46.632881665328114, -23.539226874439848], [-46.634427344040205, -23.539227040381803], [-46.63584414533017, -23.538872901528464], [-46.636423739719845, -23.539138488910908], [-46.636520334561226, -23.539581366356202], [-46.641189176169235, -23.54294665419991], [-46.642219531726425, -23.54217917105916], [-46.644376875024136, -23.543802694583505], [-46.64437666788419, -23.544334063530485], [-46.64357153958076, -23.544983469724016], [-46.642155121008585, -23.550680318970606], [-46.637969272941774, -23.552657935731006], [-46.635029647347324, -23.551825010950154], [-46.63303631416545, -23.55260541227787], [-46.631811244813605, -23.550359366666612], [-46.629319578335526, -23.5491792256269], [-46.63106374487049, -23.546666631995777], [-46.63114680041949, -23.54590523050551], [-46.63091839765889, -23.544991542897705], [-46.62906858357283, -23.542890109773225], [-46.62792243554739, -23.539876114008408]]], "type": "Polygon"}, "id": "0", "properties": {}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+            geo_json_325e77f241571e0e78f21a3ca1188d31.addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+        function geo_json_715a6564ef1962cbda707e130fb71bdf_styler(feature) {
+            switch(feature.id) {
+                default:
+                    return {"color": "#00506E", "dashArray": "6, 6", "fillColor": "transparent", "fillOpacity": 0, "interactive": false, "weight": 3};
+            }
+        }
+
+        function geo_json_715a6564ef1962cbda707e130fb71bdf_onEachFeature(feature, layer) {
+
+            layer.on({
+            });
+        };
+        var geo_json_715a6564ef1962cbda707e130fb71bdf = L.geoJson(null, {
+                onEachFeature: geo_json_715a6564ef1962cbda707e130fb71bdf_onEachFeature,
+            
+                style: geo_json_715a6564ef1962cbda707e130fb71bdf_styler,
+            ...{
+}
+        });
+
+        function geo_json_715a6564ef1962cbda707e130fb71bdf_add (data) {
+            geo_json_715a6564ef1962cbda707e130fb71bdf
+                .addData(data);
+        }
+            geo_json_715a6564ef1962cbda707e130fb71bdf_add({"bbox": [-46.638798138540984, -23.552366807793568, -46.633672198627735, -23.539226961484093], "features": [{"bbox": [-46.638798138540984, -23.552366807793568, -46.633672198627735, -23.539226961484093], "geometry": {"coordinates": [[-46.63694180064676, -23.552366807793568], [-46.63699609774543, -23.552205063995025], [-46.63712478050506, -23.55196651424704], [-46.63724068515132, -23.55178817619867], [-46.63738317863694, -23.551579502992855], [-46.63740653545996, -23.551545298242466], [-46.63751052729048, -23.551424865832534], [-46.63758152331218, -23.551355100636364], [-46.63767343306181, -23.55116719075915], [-46.63794213272102, -23.550798658911145], [-46.63803125345194, -23.5506783753232], [-46.63829678390209, -23.550359501800617], [-46.63849278860672, -23.550067115798225], [-46.63858665380657, -23.549912090842728], [-46.63868063013375, -23.549741145350836], [-46.63878876803064, -23.54953996619528], [-46.638798138540984, -23.549515178272003], [-46.63879665060315, -23.54937214056689], [-46.63879594126096, -23.549303949653034], [-46.63879167648276, -23.548893961777246], [-46.63862731934247, -23.548729499975845], [-46.6386010961652, -23.548680981467697], [-46.63854153900401, -23.548575382419624], [-46.638400717935234, -23.54840384035385], [-46.63834705189106, -23.548348994706988], [-46.63823003649909, -23.54822955544116], [-46.63802903892939, -23.54798278008962], [-46.638035686986115, -23.54796266011536], [-46.63786074389279, -23.547720543982184], [-46.637804572618165, -23.547615059849218], [-46.637770817119296, -23.54754147763973], [-46.637725635187095, -23.547364454213483], [-46.637428305190085, -23.546908212749322], [-46.63527645703912, -23.543606166291127], [-46.63527101285302, -23.54360162257569], [-46.635265724251745, -23.543596919202884], [-46.63526199998081, -23.54359339431035], [-46.63526060035401, -23.543592069613315], [-46.63525388447563, -23.54358521397083], [-46.63514027944871, -23.543410588125127], [-46.6350477929133, -23.543263734153925], [-46.63499113983132, -23.543137002267716], [-46.634776341182175, -23.542756826195117], [-46.63461716301437, -23.5424705223473], [-46.634436706754386, -23.542156104748795], [-46.634395634539416, -23.542084546637444], [-46.634385026938546, -23.542066326553524], [-46.63438435339233, -23.542059380287643], [-46.63438735223715, -23.542048422096357], [-46.63439318447669, -23.54203689231495], [-46.6343979528326, -23.542026457349742], [-46.63440039308983, -23.54201785290961], [-46.63439835376069, -23.542003425832426], [-46.634205293119, -23.541677924678243], [-46.634184731488695, -23.541646805496974], [-46.63416830278279, -23.541621991206057], [-46.63410887446575, -23.54153210466159], [-46.6340616928036, -23.541471013546282], [-46.63398869469739, -23.541381567496902], [-46.633922104169926, -23.541311288679903], [-46.63388123480816, -23.541206957246263], [-46.63385171313746, -23.541131602293632], [-46.633851656819054, -23.541120703291107], [-46.633851585451076, -23.54110541571201], [-46.63384305817515, -23.540986034166398], [-46.633839612781536, -23.54095292908601], [-46.63383376901435, -23.540915966159176], [-46.63382755174674, -23.540856702267973], [-46.63381991507905, -23.540781650226396], [-46.633804417239595, -23.540629227704926], [-46.6337941041122, -23.54052780814715], [-46.63378018247488, -23.54040702936054], [-46.63375390651759, -23.54017895564186], [-46.633744296583345, -23.540095598356366], [-46.63373600017063, -23.540026594512653], [-46.63371665579278, -23.539865651614562], [-46.633713336839435, -23.53983801757027], [-46.633712092790155, -23.53982769994934], [-46.63370325042319, -23.5397541415221], [-46.63368872000249, -23.53964749252317], [-46.63367815315992, -23.5395699156488], [-46.633672198627735, -23.539508120487046], [-46.63367348913413, -23.539493658421705], [-46.63367869000976, -23.539470666789324], [-46.633685698285596, -23.539451268304035], [-46.63368630238034, -23.539444669825983], [-46.63368561421898, -23.53944208535094], [-46.63368763711089, -23.539378291983354], [-46.63368989505505, -23.539307362193597], [-46.63371407996156, -23.53930675602442], [-46.6337281743916, -23.539305975882417], [-46.63373567389749, -23.53930255590358], [-46.63373826117521, -23.539297923268307], [-46.63373796156679, -23.53928952821675], [-46.63373665609794, -23.53928692313396], [-46.63373024588422, -23.539283378326225], [-46.633690628094925, -23.539284245904852], [-46.633691354353395, -23.539261373505934], [-46.6336924454509, -23.539226961484093]], "type": "LineString"}, "id": "93", "properties": {"nm_distrit": "SE"}, "type": "Feature"}, {"bbox": [-46.638798138540984, -23.552366807793568, -46.633672198627735, -23.539226961484093], "geometry": {"coordinates": [[-46.6336924454509, -23.539226961484093], [-46.633691354353395, -23.539261373505934], [-46.633690628094925, -23.539284245904852], [-46.63373024588422, -23.539283378326225], [-46.63373665609794, -23.53928692313396], [-46.63373796156679, -23.53928952821675], [-46.63373826117521, -23.539297923268307], [-46.63373567389749, -23.53930255590358], [-46.63372817439161, -23.539305975882417], [-46.63371407996156, -23.53930675602442], [-46.63368989505505, -23.539307362193597], [-46.63368763711089, -23.539378291983354], [-46.63368561421898, -23.53944208535094], [-46.63368630238034, -23.539444669825983], [-46.633685698285596, -23.539451268304035], [-46.63367869000976, -23.539470666789324], [-46.63367348913414, -23.539493658421705], [-46.633672198627735, -23.539508120487046], [-46.63367815315992, -23.5395699156488], [-46.63368872000249, -23.53964749252317], [-46.63370325042319, -23.5397541415221], [-46.633712092790155, -23.53982769994934], [-46.633713336839435, -23.53983801757027], [-46.63371665579278, -23.539865651614562], [-46.63373600017063, -23.540026594512653], [-46.633744296583345, -23.540095598356366], [-46.63375390651759, -23.54017895564186], [-46.63378018247488, -23.54040702936054], [-46.6337941041122, -23.54052780814715], [-46.633804417239595, -23.540629227704926], [-46.63381991507905, -23.540781650226396], [-46.63382755174674, -23.540856702267973], [-46.63383376901435, -23.540915966159176], [-46.633839612781536, -23.54095292908601], [-46.63384305817515, -23.540986034166398], [-46.633851585451076, -23.54110541571201], [-46.633851656819054, -23.541120703291107], [-46.63385171313746, -23.541131602293632], [-46.63388123480816, -23.541206957246263], [-46.633922104169926, -23.541311288679903], [-46.63398869469739, -23.541381567496902], [-46.6340616928036, -23.541471013546282], [-46.63410887446575, -23.54153210466159], [-46.63416830278279, -23.541621991206057], [-46.634184731488695, -23.541646805496974], [-46.634205293119, -23.541677924678243], [-46.63439835376069, -23.54200342583251], [-46.63440039308983, -23.54201785290961], [-46.6343979528326, -23.542026457349742], [-46.63439318447669, -23.54203689231495], [-46.63438735223715, -23.542048422096357], [-46.63438435339233, -23.542059380287643], [-46.63438502693855, -23.542066326553616], [-46.634395634539416, -23.542084546637444], [-46.634436706754386, -23.542156104748795], [-46.63461716301437, -23.5424705223473], [-46.634776341182175, -23.542756826195117], [-46.63499113983132, -23.543137002267716], [-46.6350477929133, -23.543263734153925], [-46.63514027944871, -23.543410588125127], [-46.63525388447563, -23.54358521397083], [-46.63526060035401, -23.543592069613315], [-46.63526199998081, -23.54359339431035], [-46.635265724251745, -23.543596919202884], [-46.63527101285302, -23.54360162257569], [-46.63527645703912, -23.543606166291127], [-46.637428305190085, -23.546908212749322], [-46.637725635187095, -23.547364454213483], [-46.637770817119296, -23.54754147763973], [-46.637804572618165, -23.547615059849218], [-46.63786074389279, -23.547720543982184], [-46.638035686986115, -23.54796266011536], [-46.638029038929396, -23.547982780089715], [-46.63823003649909, -23.54822955544116], [-46.63834705189106, -23.548348994706988], [-46.638400717935234, -23.54840384035385], [-46.63854153900401, -23.548575382419624], [-46.63860109616521, -23.54868098146778], [-46.63862731934247, -23.548729499975845], [-46.63879167648276, -23.548893961777246], [-46.63879594126096, -23.549303949653034], [-46.63879665060315, -23.54937214056689], [-46.638798138540984, -23.549515178272003], [-46.63878876803064, -23.54953996619528], [-46.63868063013375, -23.549741145350836], [-46.63858665380657, -23.549912090842728], [-46.63849278860672, -23.549962299719326], [-46.63829678390209, -23.550359501800617], [-46.63803125345194, -23.5506783753232], [-46.63794213272102, -23.550798658911145], [-46.63767343306181, -23.55116719075915], [-46.63758152331218, -23.551355100636364], [-46.63751052729048, -23.551424865832534], [-46.63740653545996, -23.551545298242466], [-46.63738317863694, -23.551579502992855], [-46.63724068515132, -23.55178817619867], [-46.63712478050506, -23.55196651424704], [-46.63699609774543, -23.552205063995025], [-46.63694180064676, -23.552366807793568]], "type": "LineString"}, "id": "41", "properties": {"nm_distrit": "REPUBLICA"}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+            geo_json_715a6564ef1962cbda707e130fb71bdf.addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            var marker_11a524e56aa25f49432edad9f53526e5 = L.marker(
+                [-23.546285931250644, -46.63406402749227],
+                {
+}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            var div_icon_d4b90c7fe0960be90afb40ad984c3ae4 = L.divIcon({
+  "html": "\n        \u003cdiv style=\"\n            font-size: 14px; \n            color: #00506E; \n            font-family: \u0027Geist\u0027, sans-serif;\n            font-weight: 800; \n            letter-spacing: 0.1em;\n            text-shadow: 2px 2px 0px rgba(255,255,255,0.8), -2px -2px 0px rgba(255,255,255,0.8), 2px -2px 0px rgba(255,255,255,0.8), -2px 2px 0px rgba(255,255,255,0.8); \n            pointer-events: none;\n            white-space: nowrap;\n            text-align: center;\n        \"\u003e\n            S\u00c9\n        \u003c/div\u003e\n        ",
+  "iconSize": [100, 20],
+  "iconAnchor": [50, 10],
+  "className": "empty",
+});
+        
+    
+                marker_11a524e56aa25f49432edad9f53526e5.setIcon(div_icon_d4b90c7fe0960be90afb40ad984c3ae4);
+            
+    
+            var marker_777d3f45f96163a48e5a7279671474dc = L.marker(
+                [-23.54594584123667, -46.6400667094094],
+                {
+}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            var div_icon_ff9110fa04251ea1a030aa442adf07a1 = L.divIcon({
+  "html": "\n        \u003cdiv style=\"\n            font-size: 14px; \n            color: #00506E; \n            font-family: \u0027Geist\u0027, sans-serif;\n            font-weight: 800; \n            letter-spacing: 0.1em;\n            text-shadow: 2px 2px 0px rgba(255,255,255,0.8), -2px -2px 0px rgba(255,255,255,0.8), 2px -2px 0px rgba(255,255,255,0.8), -2px 2px 0px rgba(255,255,255,0.8); \n            pointer-events: none;\n            white-space: nowrap;\n            text-align: center;\n        \"\u003e\n            REP\u00daBLICA\n        \u003c/div\u003e\n        ",
+  "iconSize": [100, 20],
+  "iconAnchor": [50, 10],
+  "className": "empty",
+});
+        
+    
+                marker_777d3f45f96163a48e5a7279671474dc.setIcon(div_icon_ff9110fa04251ea1a030aa442adf07a1);
+            
+    
+            var circle_marker_839766213227f2c732a9a769b511b176 = L.circleMarker(
+                [-23.54352, -46.63725],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_839766213227f2c732a9a769b511b176.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_bccd1427bd0fa59fbd1544e42a4b91ef = L.circleMarker(
+                [-23.541667, -46.6328124],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_bccd1427bd0fa59fbd1544e42a4b91ef.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_997d265039a1c27e899954fe1e04d402 = L.circleMarker(
+                [-23.54185, -46.63908],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_997d265039a1c27e899954fe1e04d402.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d2fe8b6db6172115808a2577f412b01e = L.circleMarker(
+                [-23.5415116, -46.6329299],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_d2fe8b6db6172115808a2577f412b01e.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_998271cbeac13137a34d5a7253be699b = L.circleMarker(
+                [-23.5447881, -46.6428023],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_998271cbeac13137a34d5a7253be699b.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_24d25a03d2341cab026b4734dbd24913 = L.circleMarker(
+                [-23.5466889, -46.639448],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_24d25a03d2341cab026b4734dbd24913.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d633fa81aaaedd2956b0440d2a4978b8 = L.circleMarker(
+                [-23.5414432, -46.6370762],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_d633fa81aaaedd2956b0440d2a4978b8.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_56d2ff85725a8ae0002bc1af9a521182 = L.circleMarker(
+                [-23.5472152, -46.6397916],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_56d2ff85725a8ae0002bc1af9a521182.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c0a1a6322b3c6285a344b9b491255536 = L.circleMarker(
+                [-23.5397327, -46.6336172],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_c0a1a6322b3c6285a344b9b491255536.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6e273081a990934513853621490a8be3 = L.circleMarker(
+                [-23.5428449, -46.6396858],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_6e273081a990934513853621490a8be3.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_ad87446aeaa64ce0b8f5ccae128ed1f9 = L.circleMarker(
+                [-23.5427689, -46.6398264],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_ad87446aeaa64ce0b8f5ccae128ed1f9.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7a0a08fad83d7e5530e623b5e5d463fb = L.circleMarker(
+                [-23.5467987, -46.641366],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_7a0a08fad83d7e5530e623b5e5d463fb.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_334b8e28c00ab1cb8a87372b760f7098 = L.circleMarker(
+                [-23.5433207, -46.63885],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_334b8e28c00ab1cb8a87372b760f7098.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6e28218949f6f865b06f493e45127724 = L.circleMarker(
+                [-23.5443303, -46.6385194],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_6e28218949f6f865b06f493e45127724.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6080273bc53b25ed79ea8f6d9e71e87e = L.circleMarker(
+                [-23.5444155, -46.6385841],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_6080273bc53b25ed79ea8f6d9e71e87e.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4559cbd48425d2e3bc5181b98cae02d9 = L.circleMarker(
+                [-23.5444727, -46.6386279],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_4559cbd48425d2e3bc5181b98cae02d9.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f332dfc50f4d78b43f13764c8d188cd9 = L.circleMarker(
+                [-23.5445874, -46.6387192],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_f332dfc50f4d78b43f13764c8d188cd9.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_879dcb337546e9833e10b0554832953b = L.circleMarker(
+                [-23.5392604, -46.6364624],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_879dcb337546e9833e10b0554832953b.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6e85820f962198c7cd95e7468d5d469c = L.circleMarker(
+                [-23.5432301, -46.6376156],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_6e85820f962198c7cd95e7468d5d469c.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d3716eade72d95070e407b83ab2ca75d = L.circleMarker(
+                [-23.5423394, -46.6344742],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_d3716eade72d95070e407b83ab2ca75d.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5be75d08723b560558365a292e644aa4 = L.circleMarker(
+                [-23.5417466, -46.6358113],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_5be75d08723b560558365a292e644aa4.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_53a7ec3bb26f99a40876db21095395ff = L.circleMarker(
+                [-23.5447148, -46.63523],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_53a7ec3bb26f99a40876db21095395ff.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5d33a20565c349b04ff0a290b82bc511 = L.circleMarker(
+                [-23.5490569, -46.6321322],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_5d33a20565c349b04ff0a290b82bc511.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_531271b75dc5dcf071c1482fe86d44bd = L.circleMarker(
+                [-23.5486672, -46.6375875],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_531271b75dc5dcf071c1482fe86d44bd.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5f53cbdf15d0de93ba89929a489cce58 = L.circleMarker(
+                [-23.5489031, -46.63825],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_5f53cbdf15d0de93ba89929a489cce58.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_05225315841256c789237831d522497a = L.circleMarker(
+                [-23.5495152, -46.637629],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_05225315841256c789237831d522497a.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_148d2903a7c08ca486ba1ac806d85af4 = L.circleMarker(
+                [-23.5504556, -46.6372401],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_148d2903a7c08ca486ba1ac806d85af4.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_7496638dc51afd38860616a3cd7e91c1 = L.circleMarker(
+                [-23.5498492, -46.6340895],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_7496638dc51afd38860616a3cd7e91c1.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_0ed02c988f662bc8e489a69d39d02eaf = L.circleMarker(
+                [-23.54944, -46.636],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_0ed02c988f662bc8e489a69d39d02eaf.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_f7ce9e61b49e4bf016b1dbc7ee19459c = L.circleMarker(
+                [-23.54808, -46.63134],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_f7ce9e61b49e4bf016b1dbc7ee19459c.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_4939b776a7b46c11d13e049342ae2a47 = L.circleMarker(
+                [-23.5487396, -46.6312917],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_4939b776a7b46c11d13e049342ae2a47.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_433dca1f4c5c86760fc294041a708ca8 = L.circleMarker(
+                [-23.5471853, -46.6334221],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_433dca1f4c5c86760fc294041a708ca8.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b34d98d1011f4e365ef0349476af5e16 = L.circleMarker(
+                [-23.5460243, -46.6334424],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_b34d98d1011f4e365ef0349476af5e16.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_29a322527b0681fcc4b77e89b22bd157 = L.circleMarker(
+                [-23.5484054, -46.6406346],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_29a322527b0681fcc4b77e89b22bd157.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_3bb37aa3056366447d36c1b22118e6ab = L.circleMarker(
+                [-23.5488175, -46.6416545],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#F08200", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_3bb37aa3056366447d36c1b22118e6ab.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_05886c05e6694faa9fae7bf2db1cd609 = L.circleMarker(
+                [-23.5488355, -46.6419709],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_05886c05e6694faa9fae7bf2db1cd609.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_473c01b1489123fc34618b82f9939c4a = L.circleMarker(
+                [-23.5479711, -46.6414575],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#28a745", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_473c01b1489123fc34618b82f9939c4a.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c42d87539a37c611a7841d4c9ea31484 = L.circleMarker(
+                [-23.5479303, -46.6411934],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_c42d87539a37c611a7841d4c9ea31484.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_8ca8a666e40523da1e4214ab03be2f3b = L.circleMarker(
+                [-23.549568, -46.6406599],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_8ca8a666e40523da1e4214ab03be2f3b.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_186fce149c13e10099ad38db8cce6833 = L.circleMarker(
+                [-23.5406778, -46.6297089],
+                {"bubblingMouseEvents": true, "color": "#FFFFFF", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#007BFF", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 1.5}
+            ).addTo(map_7fa2f1ea8b62b7353d314eb06a1c442e);
+        
+    
+            circle_marker_186fce149c13e10099ad38db8cce6833.bindTooltip(
+                `<div>
+                     Clique para ver as informações
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
