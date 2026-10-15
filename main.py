@@ -1073,7 +1073,7 @@ def Diagnostico():
         ),
         P(cls="text-zinc-300 text-base md:text-lg leading-relaxed mb-8 max-w-xl mx-auto", **{"x-text": "nivel.recomendacao"}),
         Div(
-            A("Conversar Sobre o Próximo Passo", href="#",
+            A("Conversar Sobre o Próximo Passo", href=f"mailto:{EMAIL_CONTACT}",
               cls="bg-white text-black font-semibold px-8 py-4 rounded-xl hover:bg-zinc-200 transition-colors shadow-lg",
               **{":href": "mailto"}),
             Button("Refazer Diagnóstico", type="button",
