@@ -25,6 +25,7 @@ _app, rt = fast_app(
         Meta(property="og:title", content="João Barbosa | Portfólio de Dados & BI"),
         Meta(property="og:description", content="Arquitetura de Dados, Analytics e Visualização para Decisões C-Level."),
         Meta(property="og:type", content="website"),
+        Link(rel="icon", type="image/svg+xml", href="/static/favicon.svg"),
         
         # Scripts essenciais
         Script(src="https://cdn.tailwindcss.com/3.4.17"),
@@ -33,111 +34,125 @@ _app, rt = fast_app(
         Script(src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js", defer=True),
         Script(src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
 
-        # Script do Carrossel e Modal com Acessibilidade
+        # Script do Carrossel Executivo 2.0 (Accordion + Progress + 3D Tilt + Modal Flutuante)
         Script(NotStr("""
 window.featureCarousel = function() {
     return {
-        step: 0,
-        prevStep: 0,
+        currentIndex: 0,
         isPaused: false,
         isModalOpen: false,
         selectedFeature: null,
         iframeLoaded: false,
         len: 3,
-        itemHeight: 74,
-        intervalId: null,
+        progress: 0,
+        duration: 5000,
+        rafId: null,
+        lastTick: null,
+        tiltX: 0,
+        tiltY: 0,
+        features: [
+            {
+                label: "Análise de Prazos & SLAs",
+                tag: "Gestão Estratégica",
+                iframe_src: "/Projetos/Análise de Prazos - Ficticio.html"
+            },
+            {
+                label: "Mapeamento Geoespacial SP",
+                tag: "GIS & Mobilidade",
+                iframe_src: "/Projetos/Mapa de Estacionamentos/index.html"
+            },
+            {
+                label: "Performance Operacional",
+                tag: "Eficiência & KPIs",
+                iframe_src: "/Projetos/Performance Operacional.html"
+            }
+        ],
+        get currentModalFeature() {
+            return this.selectedFeature !== null ? this.features[this.selectedFeature] : null;
+        },
+        get modalSrc() {
+            return (this.isModalOpen && this.currentModalFeature) ? encodeURI(this.currentModalFeature.iframe_src) : 'about:blank';
+        },
         init() {
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             if (!prefersReducedMotion) {
-                this.intervalId = setInterval(() => {
-                    if (!this.isPaused && !this.isModalOpen) this.go(1);
-                }, 4000);
+                this.lastTick = performance.now();
+                const loop = (now) => {
+                    const dt = now - this.lastTick;
+                    this.lastTick = now;
+                    if (!this.isPaused && !this.isModalOpen) {
+                        this.progress += (dt / this.duration) * 100;
+                        if (this.progress >= 100) {
+                            this.progress = 0;
+                            this.next();
+                        }
+                    }
+                    this.rafId = requestAnimationFrame(loop);
+                };
+                this.rafId = requestAnimationFrame(loop);
             }
         },
-        get currentIndex() {
-            return ((this.step % this.len) + this.len) % this.len;
+        select(index) {
+            if (this.currentIndex !== index) {
+                this.currentIndex = index;
+                this.progress = 0;
+                this.resetTilt();
+                if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+            }
         },
-        wrap(min, max, v) {
-            const rangeSize = max - min;
-            return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
+        next() {
+            this.currentIndex = (this.currentIndex + 1) % this.len;
+            this.progress = 0;
+            this.resetTilt();
+            if (window.ScrollTrigger) window.ScrollTrigger.refresh();
         },
-        go(n) {
-            this.prevStep = this.step;
-            this.step += n;
+        prev() {
+            this.currentIndex = (this.currentIndex - 1 + this.len) % this.len;
+            this.progress = 0;
+            this.resetTilt();
+            if (window.ScrollTrigger) window.ScrollTrigger.refresh();
         },
-        dist(i, s) {
-            return this.wrap(-this.len / 2, this.len / 2, i - (((s % this.len) + this.len) % this.len));
+        handleMouseMove(e) {
+            if (this.isModalOpen) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            this.tiltX = (y * -7).toFixed(2);
+            this.tiltY = (x * 7).toFixed(2);
         },
-        getChipStyle(i) {
-            const d = this.dist(i, this.step);
-            const prevD = this.dist(i, this.prevStep);
-            const jumped = Math.abs(d - prevD) > 1;
-            const tr = jumped
-                ? 'none'
-                : 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-            return `transform: translateY(${d * this.itemHeight}px); opacity: ${1 - Math.abs(d) * 0.35}; height: ${this.itemHeight - 8}px; transition: ${tr};`;
+        resetTilt() {
+            this.tiltX = 0;
+            this.tiltY = 0;
         },
         getCardStatus(index) {
-            const diff = index - this.currentIndex;
-            let normalizedDiff = diff;
-            if (diff > this.len / 2) normalizedDiff -= this.len;
-            if (diff < -this.len / 2) normalizedDiff += this.len;
-            
-            if (normalizedDiff === 0) return 'active';
-            if (normalizedDiff === -1) return 'prev';
-            if (normalizedDiff === 1) return 'next';
-            return 'hidden';
+            const diff = (index - this.currentIndex + this.len) % this.len;
+            if (diff === 0) return 'active';
+            if (diff === 1) return 'next';
+            return 'prev';
         },
         getCardStyle(index) {
-            if (this.isModalOpen && this.selectedFeature === index) {
-                return "position: fixed; inset: 1.5rem; z-index: 100; transform: none; opacity: 1; pointer-events: auto; view-transition-name: feature-card;";
-            }
-
             const status = this.getCardStatus(index);
             if (status === 'active') {
-                let s = "position: absolute; inset: 0; transform: translateX(0px) scale(1) rotate(0deg); opacity: 1; z-index: 20; pointer-events: auto;";
-                if (!this.isModalOpen) s += " view-transition-name: feature-card;";
-                return s;
+                return `position: absolute; inset: 0; transform: perspective(1200px) rotateX(${this.tiltX}deg) rotateY(${this.tiltY}deg) scale(1); opacity: 1; z-index: 30; pointer-events: auto;`;
             }
-            if (status === 'prev') return "position: absolute; inset: 0; transform: translateX(-110px) scale(0.88) rotate(-2deg); opacity: 0.35; z-index: 10; pointer-events: none;";
-            if (status === 'next') return "position: absolute; inset: 0; transform: translateX(110px) scale(0.88) rotate(2deg); opacity: 0.35; z-index: 10; pointer-events: none;";
-            
-            return "position: absolute; inset: 0; transform: translateX(0px) scale(0.70) rotate(0deg); opacity: 0; z-index: 0; pointer-events: none;";
+            if (status === 'next') {
+                return "position: absolute; inset: 0; transform: perspective(1200px) translateY(22px) translateX(28px) scale(0.92); opacity: 0.35; z-index: 20; pointer-events: none; filter: blur(1px) brightness(0.6);";
+            }
+            return "position: absolute; inset: 0; transform: perspective(1200px) translateY(-22px) translateX(-28px) scale(0.88); opacity: 0.18; z-index: 10; pointer-events: none; filter: blur(2px) brightness(0.4);";
         },
-        handleChipClick(index) {
-            const diff = (index - this.currentIndex + this.len) % this.len;
-            if (diff > 0) this.go(diff);
-        },
-        async openModal(index) {
+        openModal(index) {
             this.iframeLoaded = false;
-            // Fallback de segurança para garantir a resolução do estado de loading
-            setTimeout(() => { if (this.isModalOpen) this.iframeLoaded = true; }, 500);
-            if (!document.startViewTransition) {
-                this.selectedFeature = index;
-                this.isModalOpen = true;
-                document.body.style.overflow = 'hidden';
-                return;
-            }
-            document.startViewTransition(async () => {
-                this.selectedFeature = index;
-                this.isModalOpen = true;
-                document.body.style.overflow = 'hidden';
-                await this.$nextTick();
-            });
+            this.resetTilt();
+            this.selectedFeature = index;
+            this.isModalOpen = true;
+            document.body.style.overflow = 'hidden';
         },
-        async closeModal() {
-            if (!document.startViewTransition) {
-                this.isModalOpen = false;
-                setTimeout(() => this.selectedFeature = null, 300);
-                document.body.style.overflow = 'unset';
-                return;
-            }
-            document.startViewTransition(async () => {
-                this.isModalOpen = false;
-                this.selectedFeature = null;
-                document.body.style.overflow = 'unset';
-                await this.$nextTick();
-            });
+        closeModal() {
+            this.isModalOpen = false;
+            document.body.style.overflow = 'unset';
+            setTimeout(() => {
+                if (!this.isModalOpen) this.selectedFeature = null;
+            }, 300);
         }
     }
 }
@@ -149,13 +164,12 @@ window.featureCarousel = function() {
         Style("""
             html {
                 scrollbar-gutter: stable;
-                scroll-behavior: smooth;
             }
             body { 
                 font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
                 background-color: #0A0A0C; 
                 color: #F4F4F6; 
-                overflow-x: hidden; 
+                overflow-x: clip; 
             }
             .font-playfair { font-family: 'Playfair Display', Georgia, serif; }
             .font-oswald { font-family: 'Oswald', sans-serif; }
@@ -248,207 +262,315 @@ FEATURES = [
 ]
 
 def FeatureCarousel():
-    left_chips = []
+    # Configuração complementar visual por projeto (Backlight + URL de Cockpit)
+    meta_styles = [
+        {"glow": "rgba(59, 130, 246, 0.16)", "accent": "text-blue-400", "bar": "bg-blue-400", "path": "analytics.spp.gov/sla-monitor"},
+        {"glow": "rgba(52, 211, 153, 0.16)", "accent": "text-emerald-400", "bar": "bg-emerald-400", "path": "gis.spp.gov/sp-mobilidade"},
+        {"glow": "rgba(245, 158, 11, 0.16)", "accent": "text-amber-400", "bar": "bg-amber-400", "path": "cockpit.spp.gov/sgo-executivo"},
+    ]
+
+    left_accordion_items = []
     for i, f in enumerate(FEATURES):
-        left_chips.append(
+        m = meta_styles[i % len(meta_styles)]
+        left_accordion_items.append(
             Div(
+                # Cabeçalho clicável do Item
                 Button(
                     Div(
-                        NotStr(f['icon']),
-                        **{":class": f"`flex items-center justify-center transition-colors duration-300 ${{{i} === currentIndex ? 'text-black' : 'text-zinc-400'}}`"}
+                        # Índice + Ícone + Textos
+                        Div(
+                            Span(f"0{i + 1}",
+                                 **{":class": f"`font-mono text-xs font-bold transition-colors duration-300 ${{currentIndex === {i} ? 'text-white' : 'text-zinc-600 group-hover:text-zinc-400'}}`"}),
+                            Div(
+                                NotStr(f['icon']),
+                                **{":class": f"`p-2 rounded-xl border transition-all duration-300 ${{currentIndex === {i} ? 'bg-white text-black border-white shadow-md' : 'bg-[#16161D] text-zinc-400 border-white/10 group-hover:text-white'}}`"}
+                            ),
+                            Div(
+                                Span(f['tag'], cls="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-0.5"),
+                                H3(f['label'],
+                                   **{":class": f"`font-bold text-sm md:text-base tracking-tight transition-colors ${{currentIndex === {i} ? 'text-white' : 'text-zinc-300 group-hover:text-white'}}`"}),
+                                cls="text-left"
+                            ),
+                            cls="flex items-center gap-3.5"
+                        ),
+                        # Indicador lateral de status
+                        Span(
+                            "ATIVO",
+                            **{"x-show": f"currentIndex === {i}"},
+                            cls="hidden sm:inline-block text-[9px] font-mono font-semibold uppercase tracking-widest px-2 py-0.5 rounded bg-white/10 text-zinc-200 border border-white/10"
+                        ),
+                        cls="w-full flex items-center justify-between gap-2"
                     ),
-                    Div(
-                        Span(f['label'], cls="font-semibold text-xs md:text-sm tracking-tight block uppercase"),
-                        Span(f['tag'], cls="text-[10px] font-mono opacity-65 block"),
-                        cls="text-left"
-                    ),
+                    type="button",
+                    cls="w-full text-left p-4 md:p-5 cursor-pointer focus:outline-none group",
                     **{
-                        ":class": f"`w-full flex items-center gap-3.5 px-5 md:px-6 py-3 rounded-2xl transition-all duration-500 text-left group border ${{{i} === currentIndex ? 'bg-white text-black border-white shadow-xl z-10' : 'bg-[#121217] text-zinc-300 border-white/10 hover:border-white/25 hover:text-white'}}`",
-                        "@click": f"handleChipClick({i})",
-                        "@mouseenter": "isPaused = true",
-                        "@mouseleave": "isPaused = false",
-                        "@focus": "isPaused = true",
-                        "@blur": "isPaused = false",
-                        "aria-label": f"Selecionar demonstração: {f['label']}"
+                        "@click": f"select({i})",
+                        "aria-label": f"Selecionar projeto: {f['label']}"
                     }
                 ),
-                **{":style": f"getChipStyle({i})"},
-                cls="absolute inset-x-0 flex items-center justify-center"
+
+                # Corpo Expansível (Visível apenas quando este projeto está ativo)
+                Div(
+                    P(f['description'], cls="text-xs md:text-sm text-zinc-300 leading-relaxed mb-4"),
+                    Div(
+                        Button(
+                            Span("Explorar Painel Interativo"),
+                            NotStr('<svg class="w-3.5 h-3.5 ml-1.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>'),
+                            type="button",
+                            cls="inline-flex items-center text-xs font-semibold text-black bg-white hover:bg-zinc-200 px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer group/btn",
+                            **{"@click.stop": f"openModal({i})"}
+                        ),
+                        Span("Dados fictícios auditáveis", cls="text-[10px] font-mono text-zinc-500"),
+                        cls="flex items-center justify-between gap-3 pt-1"
+                    ),
+                    cls="px-4 md:px-5 pb-5 pt-0 border-t border-white/5 mt-1",
+                    **{
+                        "x-show": f"currentIndex === {i}",
+                        "x-transition:enter": "transition ease-out duration-300",
+                        "x-transition:enter-start": "opacity-0 -translate-y-1",
+                        "x-transition:enter-end": "opacity-100 translate-y-0"
+                    }
+                ),
+
+                # Barra de Progresso do Autoplay (na base do Card Ativo)
+                Div(
+                    Div(
+                        cls=f"h-full {m['bar']} transition-none",
+                        **{":style": f"`width: ${{currentIndex === {i} ? progress : 0}}%`"}
+                    ),
+                    cls="h-[2px] w-full bg-white/5 overflow-hidden",
+                    **{"x-show": f"currentIndex === {i}"}
+                ),
+
+                **{
+                    ":class": f"`relative rounded-2xl overflow-hidden transition-all duration-300 border ${{currentIndex === {i} ? 'bg-[#14141B] border-white/25 shadow-2xl' : 'bg-[#0E0E13]/60 border-white/5 hover:border-white/15 hover:bg-[#121218]'}}`"
+                }
             )
         )
-        
-    backdrop = Div(
-        **{
-            "x-show": "isModalOpen",
-            "x-transition.opacity.duration.300ms": "",
-            "@click": "closeModal()",
-        },
-        cls="fixed inset-0 bg-black/85 backdrop-blur-md z-[90]"
+
+    # MODAL FLUTUANTE EXECUTIVO 100% DESACOPLADO (Escala Livre de Transformações)
+    modal = Div(
+        # 1. Backdrop com blur
+        Div(
+            cls="fixed inset-0 bg-black/85 backdrop-blur-md z-[90]",
+            **{
+                "x-show": "isModalOpen",
+                "x-transition.opacity.duration.300ms": "",
+                "@click": "closeModal()",
+            }
+        ),
+        # 2. Janela Modal Flutuante
+        Div(
+            Div(
+                # Barra Superior do Modal
+                Div(
+                    Div(
+                        H3(
+                            cls="text-base sm:text-lg font-bold text-white tracking-tight",
+                            **{"x-text": "currentModalFeature ? currentModalFeature.label : ''"}
+                        ),
+                        Span(
+                            "Dados fictícios para demonstração",
+                            cls="ml-3 hidden sm:inline-block text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded bg-white/5 border border-white/10 text-zinc-400"
+                        ),
+                        cls="flex items-center"
+                    ),
+                    Div(
+                        A(
+                            Span("Abrir em Nova Aba"),
+                            NotStr('<svg class="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
+                            target="_blank",
+                            rel="noopener noreferrer",
+                            cls="inline-flex items-center text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1.5 rounded-lg transition-colors mr-2 cursor-pointer",
+                            **{":href": "currentModalFeature ? currentModalFeature.iframe_src : '#'"}
+                        ),
+                        Button(
+                            NotStr('<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'),
+                            cls="p-1.5 bg-white/10 hover:bg-white hover:text-black text-white rounded-lg border border-white/15 transition-colors cursor-pointer",
+                            aria_label="Fechar demonstração",
+                            **{"@click.stop": "closeModal()"}
+                        ),
+                        cls="flex items-center"
+                    ),
+                    cls="h-14 px-6 bg-[#0E0E12] border-b border-white/10 flex items-center justify-between shrink-0"
+                ),
+                # Conteúdo do Modal: Iframe e Loading Skeleton
+                Div(
+                    # Loading Skeleton
+                    Div(
+                        Div(
+                            Span(cls="size-3 rounded-full bg-emerald-400 animate-ping"),
+                            Span("Carregando painel analítico...", cls="text-xs font-mono text-zinc-300"),
+                            cls="flex items-center gap-3 bg-[#121217] px-5 py-3 rounded-xl border border-white/10 shadow-xl"
+                        ),
+                        cls="absolute inset-0 flex items-center justify-center bg-[#0A0A0C] z-20 pointer-events-none",
+                        **{"x-show": "!iframeLoaded", "x-transition.opacity.duration.200ms": ""}
+                    ),
+                    # Iframe Real
+                    Iframe(
+                        title="Demonstração Interativa",
+                        cls="w-full h-full border-0 pointer-events-auto bg-[#0A0A0C]",
+                        **{
+                            ":src": "modalSrc",
+                            "@load": "iframeLoaded = true"
+                        }
+                    ),
+                    cls="relative flex-1 w-full overflow-hidden bg-[#0A0A0C]"
+                ),
+                cls="relative w-full h-full max-w-7xl max-h-[92vh] bg-[#121217] rounded-2xl border border-white/20 shadow-2xl flex flex-col overflow-hidden",
+                **{"@click.stop": ""}
+            ),
+            cls="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 pointer-events-auto",
+            **{
+                "x-show": "isModalOpen",
+                "x-transition:enter": "transition ease-out duration-300",
+                "x-transition:enter-start": "opacity-0 scale-95",
+                "x-transition:enter-end": "opacity-100 scale-100",
+                "x-transition:leave": "transition ease-in duration-200",
+                "x-transition:leave-start": "opacity-100 scale-100",
+                "x-transition:leave-end": "opacity-0 scale-95",
+            }
+        ),
+        **{"x-show": "isModalOpen", "x-cloak": ""}
     )
 
     right_cards = []
     for i, f in enumerate(FEATURES):
-        encoded_src = urllib.parse.quote(f['iframe_src'])
-        media_element = Iframe(
-            **{
-                "x-bind:src": f"isModalOpen && selectedFeature === {i} ? '{encoded_src}' : 'about:blank'",
-                "@load": "iframeLoaded = true"
-            },
-            title=f"Demonstração: {f['label']}",
-            cls="w-full h-full border-0 pointer-events-auto bg-[#0A0A0C]"
+        m = meta_styles[i % len(meta_styles)]
+
+        # 1. Barra Superior de Janela (Window Chrome para o Preview)
+        preview_window_bar = Div(
+            # Bolinhas estilo macOS
+            Div(
+                Span(cls="size-2.5 rounded-full bg-zinc-700/80"),
+                Span(cls="size-2.5 rounded-full bg-zinc-700/80"),
+                Span(cls="size-2.5 rounded-full bg-zinc-700/80"),
+                cls="flex items-center gap-1.5"
+            ),
+            # Barra de endereço simulada do Cockpit
+            Div(
+                NotStr('<svg class="w-3 h-3 text-zinc-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>'),
+                Span(m["path"], cls="text-[10px] font-mono text-zinc-400 truncate"),
+                cls="hidden sm:flex items-center bg-[#0A0A0E] px-3 py-1 rounded-md border border-white/5 max-w-[240px]"
+            ),
+            # Badge de Demonstração Interativa alojada na barra superior
+            Div(
+                Span(cls="size-1.5 rounded-full bg-emerald-400 animate-pulse"),
+                Span("Demo Interativa", cls="text-[10px] font-mono font-medium text-zinc-200 tracking-wide"),
+                cls="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full"
+            ),
+            cls="h-9 px-4 bg-[#14141B] border-b border-white/10 flex items-center justify-between shrink-0 z-[35]"
         )
+
+        # 2. Imagem 100% limpa e visível
         image_cover = Img(
-            src=f['image'], 
+            src=f['image'],
             alt=f['label'],
-            width="580",
-            height="362",
+            width="640",
+            height="400",
             loading="lazy",
             decoding="async",
-            cls="absolute inset-0 w-full h-full object-cover object-center z-[30] bg-[#121217]",
-            **{
-                "x-show": f"!(isModalOpen && selectedFeature === {i})",
-                "x-transition.opacity.duration.300ms": "",
-                ":class": f"`${{{i} === currentIndex ? 'grayscale-0 blur-0 brightness-100' : 'grayscale blur-[2px] brightness-50'}}`"
-            }
+            cls="absolute inset-0 w-full h-full object-cover object-top z-[30] bg-[#121217] transition-transform duration-700 group-hover/card:scale-[1.02]"
         )
 
-        # Loading Skeleton do Iframe
-        loading_skeleton = Div(
+        # 3. Pílula Flutuante Sutil no Hover ("Clique para Interagir")
+        hover_cta_overlay = Div(
             Div(
-                Span(cls="size-3 rounded-full bg-emerald-400 animate-ping"),
-                Span("Carregando painel analítico...", cls="text-xs font-mono text-zinc-300"),
-                cls="flex items-center gap-3 bg-[#121217] px-5 py-3 rounded-xl border border-white/10 shadow-xl"
+                NotStr('<svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>'),
+                Span("Clique para Interagir no Painel ao Vivo", cls="text-xs font-semibold text-white tracking-tight"),
+                cls="flex items-center gap-2 bg-[#0A0A0E]/90 backdrop-blur-md border border-white/20 px-4 py-2.5 rounded-full shadow-2xl transform translate-y-2 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300"
             ),
-            cls="absolute inset-0 flex items-center justify-center bg-[#0A0A0C] z-[25]",
-            **{"x-show": f"isModalOpen && selectedFeature === {i} && !iframeLoaded", "x-transition.opacity.duration.200ms": ""}
-        )
-
-        # Barra Superior do Modal Exclusiva
-        modal_header_bar = Div(
-            Div(
-                H3(f['label'], cls="text-base sm:text-lg font-bold text-white tracking-tight"),
-                Span("Dados fictícios para demonstração", cls="ml-3 hidden sm:inline-block text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded bg-white/5 border border-white/10 text-zinc-400"),
-                cls="flex items-center"
-            ),
-            Div(
-                A(
-                    Span("Abrir em Nova Aba"),
-                    NotStr('<svg class="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
-                    href=f['iframe_src'],
-                    target="_blank",
-                    rel="noopener noreferrer",
-                    cls="inline-flex items-center text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1.5 rounded-lg transition-colors mr-2 cursor-pointer"
-                ),
-                Button(
-                    NotStr('<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'),
-                    cls="p-1.5 bg-white/10 hover:bg-white hover:text-black text-white rounded-lg border border-white/15 transition-colors cursor-pointer",
-                    aria_label="Fechar demonstração",
-                    **{"@click.stop": "closeModal()"}
-                ),
-                cls="flex items-center"
-            ),
-            cls="h-14 px-6 bg-[#0E0E12] border-b border-white/10 flex items-center justify-between shrink-0 z-[110]",
-            **{"x-show": f"isModalOpen && selectedFeature === {i}"}
-        )
-
-        media_content = Div(
-            modal_header_bar,
-            Div(media_element, image_cover, loading_skeleton, cls="relative flex-1 w-full overflow-hidden"),
-            cls="w-full h-full relative bg-[#121217] flex flex-col"
+            cls="absolute inset-0 z-[40] flex items-center justify-center bg-black/0 group-hover/card:bg-black/25 transition-colors duration-300 pointer-events-none",
+            **{"x-show": f"!isModalOpen && currentIndex === {i}"}
         )
 
         right_cards.append(
             Div(
-                media_content,
-                
-                # Bottom Project Details Bar (Visível apenas no card ATIVO e fora do modal)
+                preview_window_bar,
                 Div(
-                    Div(
-                        Span(f"0{i + 1} • {f['label']}", cls="bg-white/10 text-zinc-200 border border-white/10 px-3 py-1 rounded-full text-[10px] md:text-[11px] font-mono uppercase tracking-wider w-fit mb-2"),
-                        Span("Dados fictícios", cls="text-[10px] font-mono text-zinc-400"),
-                        cls="flex items-center justify-between"
-                    ),
-                    Div(
-                        P(f['description'], cls="text-zinc-200 font-medium text-xs md:text-sm leading-snug tracking-tight flex-1"),
-                        Span("Explorar Painel", cls="hidden sm:inline-flex items-center text-xs font-semibold text-black bg-white px-3.5 py-1.5 rounded-lg shadow-sm ml-3 shrink-0 hover:bg-zinc-200 transition-colors"),
-                        cls="flex items-center justify-between gap-3"
-                    ),
-                    cls="absolute inset-x-4 md:inset-x-6 bottom-4 md:bottom-6 p-4 md:p-5 rounded-2xl bg-[#0E0E12] border border-white/15 shadow-2xl flex flex-col justify-end z-[40]",
-                    **{
-                        "x-show": f"!isModalOpen && currentIndex === {i}",
-                        "x-transition.opacity.duration.300ms": ""
-                    }
+                    image_cover,
+                    hover_cta_overlay,
+                    cls="relative flex-1 w-full overflow-hidden"
                 ),
-                
-                # Live Interactive Badge (Apenas no card ativo fora do modal)
-                Div(
-                    Div(cls="w-2 h-2 rounded-full bg-emerald-400"),
-                    Span("Demonstração Interativa", cls="text-zinc-200 text-[10px] font-medium tracking-wider font-mono"),
-                    cls="absolute top-5 right-5 flex items-center gap-2 z-[40] bg-[#0E0E12] px-3 py-1.5 rounded-full border border-white/10 shadow-md",
-                    **{
-                        "x-show": f"!isModalOpen && currentIndex === {i}",
-                        "x-transition.opacity.duration.300ms": ""
-                    }
-                ),
-
-                # Click Catcher acessível via teclado com foco visível
+                # Botão invisível de captura de clique acessível via teclado
                 Button(
-                    cls="absolute inset-0 z-[50] cursor-pointer opacity-0 w-full h-full border-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0A0C] rounded-3xl outline-none transition-all",
-                    aria_label=f"Expandir demonstração interativa: {f['label']}",
+                    cls="absolute inset-0 z-[50] cursor-pointer opacity-0 w-full h-full border-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white rounded-2xl outline-none",
+                    aria_label=f"Abrir demonstração interativa: {f['label']}",
                     **{
-                        "x-show": f"!(isModalOpen && selectedFeature === {i})",
                         "@click": f"if ({i} === currentIndex) openModal({i})"
                     }
                 ),
-                
-                cls="rounded-3xl overflow-hidden border border-white/15 bg-[#121217] origin-center transition-all duration-700 ease-out shadow-2xl",
+                cls="rounded-2xl overflow-hidden border border-white/15 bg-[#121217] flex flex-col transition-all duration-500 ease-out shadow-[0_25px_70px_rgba(0,0,0,0.75)] group/card",
                 **{
                     ":style": f"getCardStyle({i})",
-                    ":class": f"`${{{i} === currentIndex && !isModalOpen ? 'hover:scale-[1.01] hover:border-white/30' : ''}}`"
+                    "@mousemove": f"if (currentIndex === {i}) handleMouseMove($event)",
+                    "@mouseleave": "resetTilt()"
                 }
             )
         )
 
     return Div(
-        backdrop,
+        modal,
         Div(
-            # Left Navigation Column
-            Div(
-                Div(cls="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0A0A0C] via-[#0A0A0C]/80 to-transparent z-40 pointer-events-none"),
-                Div(cls="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0A0A0C] via-[#0A0A0C]/80 to-transparent z-40 pointer-events-none"),
-                Div(
-                    *left_chips,
-                    cls="relative w-full max-w-sm h-full flex items-center justify-center z-20"
-                ),
-                cls="w-full lg:w-[40%] min-h-[340px] md:min-h-[420px] lg:h-full relative z-30 flex flex-col items-center justify-center overflow-hidden px-6 md:px-8 bg-[#0A0A0C]"
-            ),
-            # Right Interactive Showcase Stage
+            # COLUNA ESQUERDA: Accordion Inteligente + Controles
             Div(
                 Div(
-                    *right_cards,
-                    cls="relative w-full max-w-[580px] aspect-[16/10] md:aspect-video flex items-center justify-center"
+                    Span("SELECIONE O ESTUDO DE CASO", cls="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 block mb-4"),
+                    Div(*left_accordion_items, cls="space-y-3"),
+                    cls="w-full"
                 ),
-                # Navigation Controls (Prev / Index / Next)
+                # Rodapé da Coluna Esquerda: Navegação Manual + Status de Autoplay
                 Div(
-                    Button(
-                        NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>'),
-                        cls="w-10 h-10 rounded-full bg-[#18181E] border border-white/15 text-zinc-300 hover:text-white hover:border-white/40 hover:bg-[#22222A] flex items-center justify-center transition-all cursor-pointer",
-                        **{"@click": "go(-1); isPaused = true", "aria-label": "Projeto anterior"}
+                    Div(
+                        Button(
+                            NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>'),
+                            type="button",
+                            cls="w-9 h-9 rounded-xl bg-[#14141B] border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 flex items-center justify-center transition-all cursor-pointer",
+                            **{"@click": "prev()", "aria-label": "Projeto anterior"}
+                        ),
+                        Span(
+                            cls="text-xs font-mono text-zinc-400 px-3",
+                            **{"x-text": "`0${currentIndex + 1} / 0${len}`"}
+                        ),
+                        Button(
+                            NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'),
+                            type="button",
+                            cls="w-9 h-9 rounded-xl bg-[#14141B] border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 flex items-center justify-center transition-all cursor-pointer",
+                            **{"@click": "next()", "aria-label": "Próximo projeto"}
+                        ),
+                        cls="flex items-center gap-1"
                     ),
                     Span(
-                        cls="text-xs font-mono font-medium tracking-wider text-zinc-300 px-4 py-2 bg-[#18181E] rounded-full border border-white/15",
-                        **{"x-text": "`0${currentIndex + 1} / 0${len}`"}
+                        **{"x-text": "isPaused ? '⏸ PAUSADO' : '▶ AUTO-CICLO'"},
+                        cls="text-[10px] font-mono tracking-widest text-zinc-500 uppercase"
                     ),
-                    Button(
-                        NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'),
-                        cls="w-10 h-10 rounded-full bg-[#18181E] border border-white/15 text-zinc-300 hover:text-white hover:border-white/40 hover:bg-[#22222A] flex items-center justify-center transition-all cursor-pointer",
-                        **{"@click": "go(1); isPaused = true", "aria-label": "Próximo projeto"}
-                    ),
-                    cls="flex items-center gap-3 mt-8 z-30"
+                    cls="w-full flex items-center justify-between pt-6 mt-6 border-t border-white/10"
                 ),
-                cls="flex-1 min-h-[500px] md:min-h-[580px] lg:h-full relative bg-[#0E0E12] flex flex-col items-center justify-center py-12 md:py-16 px-6 md:px-10 overflow-hidden border-t lg:border-t-0 lg:border-l border-white/10"
+                cls="w-full lg:w-[42%] p-6 sm:p-8 lg:p-10 flex flex-col justify-between bg-[#0A0A0C] z-30"
             ),
-            cls="relative overflow-hidden rounded-[2.5rem] flex flex-col lg:flex-row min-h-[580px] border border-white/15 shadow-2xl bg-[#0A0A0C]"
+
+            # COLUNA DIREITA: Palco de Exibição com Backlight Dinâmico e 3D Tilt
+            Div(
+                # Luz Ambiental Dinâmica no fundo (Muda de cor conforme o projeto ativo)
+                Div(
+                    cls="absolute inset-0 pointer-events-none transition-all duration-700 opacity-90",
+                    **{
+                        ":style": "`background: radial-gradient(circle at 55% 50%, ${currentIndex === 0 ? 'rgba(59,130,246,0.16)' : currentIndex === 1 ? 'rgba(52,211,153,0.16)' : 'rgba(245,158,11,0.16)'}, transparent 68%);`"
+                    }
+                ),
+                # Grade de Fundo Sutil de Engenharia
+                Div(cls="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none"),
+
+                # Container dos Cards Empilhados em Perspectiva
+                Div(
+                    *right_cards,
+                    cls="relative w-full max-w-[640px] aspect-[16/10] flex items-center justify-center z-20"
+                ),
+
+                cls="flex-1 min-h-[380px] sm:min-h-[480px] lg:min-h-[560px] relative bg-[#0D0D12] flex items-center justify-center p-6 sm:p-10 lg:p-14 overflow-hidden border-t lg:border-t-0 lg:border-l border-white/10"
+            ),
+
+            cls="relative overflow-hidden rounded-[2rem] flex flex-col lg:flex-row border border-white/15 shadow-2xl bg-[#0A0A0C]"
         ),
         **{
             "x-data": "featureCarousel()",
@@ -809,12 +931,12 @@ def DataJourney3DSection():
         const stageMetric = document.getElementById('stage-3d-metric');
 
         if (!reducedMotion) {
-            gsap.timeline({
+            const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: "#philosophy-scroll-track",
                     start: "top top",
                     end: "bottom bottom",
-                    scrub: 1.0,
+                    scrub: 0.6,
                     onUpdate: (self) => {
                         const p = self.progress;
                         if (!stageBadge || !stageMetric) return;
@@ -830,13 +952,15 @@ def DataJourney3DSection():
                         }
                     }
                 }
-            }).to(state, {
+            });
+
+            tl.to(state, {
                 progress: 1,
                 camX: 0,
                 camY: 9.2,
                 camZ: 20.5,
                 lookY: 1.8,
-                ease: "power2.inOut"
+                ease: "none"
             });
         }
 
@@ -855,7 +979,7 @@ def DataJourney3DSection():
         });
 
         // Pausa automática da renderização quando fora da viewport para economizar GPU
-        let isVisible = false;
+        let isVisible = true;
         const observer = new IntersectionObserver((entries) => {
             isVisible = entries[0].isIntersecting;
         }, { threshold: 0.01 });
@@ -868,8 +992,7 @@ def DataJourney3DSection():
 
             const elapsed = clock.getElapsedTime();
             const t = state.progress;
-            const smoothT = t * t * (3 - 2 * t);
-            const chaosFactor = 1 - smoothT;
+            const chaosFactor = 1 - t;
 
             for (let i = 0; i < TOTAL; i++) {
                 const c = chaosState[i];
@@ -880,14 +1003,14 @@ def DataJourney3DSection():
                 const fz = Math.sin(elapsed * 0.7 * c.speed + c.phase) * 0.45 * chaosFactor;
 
                 dummy.position.set(
-                    THREE.MathUtils.lerp(c.x, ins.x, smoothT) + fx,
-                    THREE.MathUtils.lerp(c.y, ins.y, smoothT) + fy,
-                    THREE.MathUtils.lerp(c.z, ins.z, smoothT) + fz
+                    THREE.MathUtils.lerp(c.x, ins.x, t) + fx,
+                    THREE.MathUtils.lerp(c.y, ins.y, t) + fy,
+                    THREE.MathUtils.lerp(c.z, ins.z, t) + fz
                 );
                 dummy.rotation.set(
-                    THREE.MathUtils.lerp(c.rx + elapsed * 0.25, 0, smoothT),
-                    THREE.MathUtils.lerp(c.ry + elapsed * 0.35, 0, smoothT),
-                    THREE.MathUtils.lerp(c.rz, 0, smoothT)
+                    THREE.MathUtils.lerp(c.rx + elapsed * 0.25, 0, t),
+                    THREE.MathUtils.lerp(c.ry + elapsed * 0.35, 0, t),
+                    THREE.MathUtils.lerp(c.rz, 0, t)
                 );
                 dummy.updateMatrix();
                 instancedData.setMatrixAt(i, dummy.matrix);
@@ -908,6 +1031,11 @@ def DataJourney3DSection():
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
+            if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+        });
+
+        window.addEventListener('load', () => {
+            if (window.ScrollTrigger) window.ScrollTrigger.refresh();
         });
     });
     """
@@ -946,6 +1074,7 @@ def DataJourney3DSection():
                     cls="relative z-10 pb-10 px-6 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pointer-events-none"
                 ),
 
+                id="data-3d-stage",
                 cls="sticky top-0 w-full h-screen overflow-hidden flex flex-col justify-between"
             ),
             id="philosophy-scroll-track",
