@@ -5,6 +5,7 @@ from starlette.middleware.gzip import GZipMiddleware
 import json
 import urllib.parse
 from pathlib import Path
+import os
 
 # --- DADOS REAIS DE CONTATO ---
 LINKEDIN_URL = "https://www.linkedin.com/in/joaobarbosamf"
@@ -12,6 +13,7 @@ GITHUB_URL = "https://github.com/Joao-programador"
 EMAIL_CONTACT = "joaogoncalves07082022@gmail.com"
 
 _app, rt = fast_app(
+    secret_key=os.environ.get("SECRET_KEY", "joao-portfolio-secret-key-2026-spp-parcerias"),
     htmx=False,
     surreal=False,
     pico=False,
@@ -206,8 +208,13 @@ handler = app
 application = app
 
 BASE_DIR = Path(__file__).resolve().parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-app.mount("/Projetos", StaticFiles(directory=str(BASE_DIR / "Projetos"), html=True), name="projetos")
+static_dir = BASE_DIR / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+projetos_dir = BASE_DIR / "Projetos"
+if projetos_dir.exists():
+    app.mount("/Projetos", StaticFiles(directory=str(projetos_dir), html=True), name="projetos")
 
 FEATURES = [
   {
