@@ -28,6 +28,7 @@ _app, rt = fast_app(
         
         # Scripts essenciais
         Script(src="https://cdn.tailwindcss.com/3.4.17"),
+        Script(src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", defer=True),
         Script(src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js", defer=True),
         Script(src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js", defer=True),
         Script(src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
@@ -640,6 +641,389 @@ def AboutSection():
         cls="py-24 md:py-28 bg-[#0A0A0C] border-b border-white/10 relative z-20 scroll-mt-20"
     )
 
+def DataJourney3DSection():
+    three_js_script = """
+    window.addEventListener('DOMContentLoaded', () => {
+        if (typeof THREE === 'undefined' || typeof gsap === 'undefined') return;
+        gsap.registerPlugin(ScrollTrigger);
+
+        const container = document.getElementById('data-3d-canvas');
+        if (!container) return;
+
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // 1. CENA, CÂMERA E RENDERER (Dark Mode #0A0A0C)
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0A0A0C);
+        scene.fog = new THREE.FogExp2(0x0A0A0C, 0.018);
+
+        const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 150);
+        camera.position.set(0, 26, 5);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // 2. ILUMINAÇÃO EXECUTIVA DE ESTÚDIO
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xf4f4f6, 1.1);
+        dirLight.position.set(16, 30, 20);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        const d = 16;
+        dirLight.shadow.camera.left = -d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = -d;
+        scene.add(dirLight);
+
+        const emeraldLight = new THREE.PointLight(0x34d399, 0.8, 30);
+        emeraldLight.position.set(-8, 8, 8);
+        scene.add(emeraldLight);
+
+        // 3. PLATAFORMA BASE (#121217 com Grid Sutil)
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        const baseGeo = new THREE.BoxGeometry(17.5, 0.5, 11.5);
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x121217, roughness: 0.7, metalness: 0.2 });
+        const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+        baseMesh.position.y = -0.3;
+        baseMesh.receiveShadow = true;
+        boardGroup.add(baseMesh);
+
+        const gridHelper = new THREE.GridHelper(17, 16, 0x27272a, 0x18181b);
+        gridHelper.position.y = -0.03;
+        gridHelper.scale.z = 11.5 / 17;
+        boardGroup.add(gridHelper);
+
+        // 4. INSTANCED MESH (480 Nós de Dados: Caos -> Star Schema / BI)
+        const COLS = 10, ROWS = 6, MAX_STACK = 11, TOTAL = 480;
+        const cubeGeo = new THREE.BoxGeometry(0.8, 0.4, 0.8);
+        const cubeMat = new THREE.MeshStandardMaterial({ roughness: 0.25, metalness: 0.2 });
+        const instancedData = new THREE.InstancedMesh(cubeGeo, cubeMat, TOTAL);
+        instancedData.castShadow = true;
+        instancedData.receiveShadow = true;
+        boardGroup.add(instancedData);
+
+        const palette = [
+            new THREE.Color(0x27272a), // Zinc-800
+            new THREE.Color(0x52525b), // Zinc-600
+            new THREE.Color(0xa1a1aa), // Zinc-400
+            new THREE.Color(0xf4f4f6), // Branco
+            new THREE.Color(0x34d399)  // Emerald-400 (KPI Destaque)
+        ];
+
+        const chaosState = [];
+        const insightState = [];
+        const dummy = new THREE.Object3D();
+
+        function generatePipelineData() {
+            chaosState.length = 0;
+            insightState.length = 0;
+
+            const heights = [];
+            for (let c = 0; c < COLS; c++) {
+                heights[c] = [];
+                for (let r = 0; r < ROWS; r++) {
+                    const trend = (c / COLS) * 5.5;
+                    heights[c][r] = Math.max(1, Math.min(MAX_STACK, Math.floor(Math.random() * 6 + trend + 1)));
+                }
+            }
+
+            let idx = 0;
+            const spX = 1.42, spZ = 1.42;
+            const stX = -((COLS - 1) * spX) / 2;
+            const stZ = -((ROWS - 1) * spZ) / 2;
+
+            for (let c = 0; c < COLS; c++) {
+                for (let r = 0; r < ROWS; r++) {
+                    const h = heights[c][r];
+                    for (let s = 0; s < h; s++) {
+                        if (idx >= TOTAL) break;
+                        insightState.push({
+                            x: stX + c * spX,
+                            y: 0.22 + s * 0.44,
+                            z: stZ + r * spZ
+                        });
+
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = 2 + Math.random() * 13;
+                        chaosState.push({
+                            x: Math.cos(angle) * radius,
+                            y: 3.5 + Math.random() * 13,
+                            z: Math.sin(angle) * (radius * 0.75),
+                            rx: (Math.random() - 0.5) * Math.PI * 2,
+                            ry: (Math.random() - 0.5) * Math.PI * 2,
+                            rz: (Math.random() - 0.5) * Math.PI * 2,
+                            phase: Math.random() * Math.PI * 2,
+                            speed: 0.5 + Math.random() * 1.0
+                        });
+
+                        let cIdx = 0;
+                        if (h >= 9 && s === h - 1) cIdx = 4;
+                        else if (h >= 7) cIdx = 3;
+                        else if (h >= 5) cIdx = 2;
+                        else if (h >= 3) cIdx = 1;
+                        instancedData.setColorAt(idx, palette[cIdx]);
+                        idx++;
+                    }
+                }
+            }
+
+            while (idx < TOTAL) {
+                const c = idx % COLS;
+                const r = Math.floor(idx / COLS) % ROWS;
+                const s = heights[c][r]++;
+                insightState.push({ x: stX + c * spX, y: 0.22 + s * 0.44, z: stZ + r * spZ });
+                chaosState.push({
+                    x: (Math.random() - 0.5) * 22, y: 4 + Math.random() * 12, z: (Math.random() - 0.5) * 16,
+                    rx: Math.random() * 3, ry: Math.random() * 3, rz: Math.random() * 3,
+                    phase: Math.random() * Math.PI, speed: 0.8
+                });
+                instancedData.setColorAt(idx, palette[2]);
+                idx++;
+            }
+            instancedData.instanceColor.needsUpdate = true;
+        }
+
+        generatePipelineData();
+
+        // 5. SCROLLTRIGGER ATRELADO AO TRACK #philosophy-scroll-track
+        const state = {
+            progress: reducedMotion ? 1 : 0,
+            camX: 0,
+            camY: reducedMotion ? 9.2 : 26,
+            camZ: reducedMotion ? 20.5 : 5,
+            lookY: reducedMotion ? 1.8 : 3.5
+        };
+
+        const stageBadge = document.getElementById('stage-3d-badge');
+        const stageMetric = document.getElementById('stage-3d-metric');
+
+        if (!reducedMotion) {
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: "#philosophy-scroll-track",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 1.0,
+                    onUpdate: (self) => {
+                        const p = self.progress;
+                        if (!stageBadge || !stageMetric) return;
+                        if (p < 0.3) {
+                            stageBadge.textContent = "01 // BASES DISPERSAS & CAOS OPERACIONAL";
+                            stageMetric.textContent = `Entropia: ${(98.4 - p * 110).toFixed(1)}% • Planilhas & Sistemas Isolados`;
+                        } else if (p < 0.72) {
+                            stageBadge.textContent = "02 // PIPELINE PYTHON & STAR SCHEMA SQL";
+                            stageMetric.textContent = `Higienização & Modelagem: ${Math.min(99, Math.floor(p * 130))}% • Auditando Linhas`;
+                        } else {
+                            stageBadge.textContent = "03 // COCKPIT EXECUTIVO C-LEVEL (< 5s)";
+                            stageMetric.textContent = "Integridade: 100% • Decisões Auditáveis em Tempo Real";
+                        }
+                    }
+                }
+            }).to(state, {
+                progress: 1,
+                camX: 0,
+                camY: 9.2,
+                camZ: 20.5,
+                lookY: 1.8,
+                ease: "power2.inOut"
+            });
+        }
+
+        const simBtn = document.getElementById('simulate-3d-btn');
+        if (simBtn) {
+            simBtn.addEventListener('click', () => {
+                generatePipelineData();
+                gsap.fromTo(boardGroup.rotation, { y: boardGroup.rotation.y - 0.3 }, { y: boardGroup.rotation.y, duration: 0.7, ease: "back.out(1.7)" });
+            });
+        }
+
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        });
+
+        // Pausa automática da renderização quando fora da viewport para economizar GPU
+        let isVisible = false;
+        const observer = new IntersectionObserver((entries) => {
+            isVisible = entries[0].isIntersecting;
+        }, { threshold: 0.01 });
+        observer.observe(container);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!isVisible) return;
+
+            const elapsed = clock.getElapsedTime();
+            const t = state.progress;
+            const smoothT = t * t * (3 - 2 * t);
+            const chaosFactor = 1 - smoothT;
+
+            for (let i = 0; i < TOTAL; i++) {
+                const c = chaosState[i];
+                const ins = insightState[i];
+
+                const fx = Math.sin(elapsed * c.speed + c.phase) * 0.45 * chaosFactor;
+                const fy = Math.cos(elapsed * c.speed + c.phase) * 0.45 * chaosFactor;
+                const fz = Math.sin(elapsed * 0.7 * c.speed + c.phase) * 0.45 * chaosFactor;
+
+                dummy.position.set(
+                    THREE.MathUtils.lerp(c.x, ins.x, smoothT) + fx,
+                    THREE.MathUtils.lerp(c.y, ins.y, smoothT) + fy,
+                    THREE.MathUtils.lerp(c.z, ins.z, smoothT) + fz
+                );
+                dummy.rotation.set(
+                    THREE.MathUtils.lerp(c.rx + elapsed * 0.25, 0, smoothT),
+                    THREE.MathUtils.lerp(c.ry + elapsed * 0.35, 0, smoothT),
+                    THREE.MathUtils.lerp(c.rz, 0, smoothT)
+                );
+                dummy.updateMatrix();
+                instancedData.setMatrixAt(i, dummy.matrix);
+            }
+            instancedData.instanceMatrix.needsUpdate = true;
+
+            camera.position.x = state.camX + mouseX * 1.5;
+            camera.position.y = state.camY - mouseY * 0.9;
+            camera.position.z = state.camZ;
+            camera.lookAt(0, state.lookY, 0);
+
+            boardGroup.rotation.y = THREE.MathUtils.lerp(boardGroup.rotation.y, mouseX * 0.15, 0.05);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    });
+    """
+
+    return Section(
+        # Track de Scroll (250vh) onde a câmera 3D viaja do Caos ao Insight
+        Div(
+            Div(
+                Div(id="data-3d-canvas", cls="absolute inset-0 w-full h-full z-0"),
+
+                # Header Editorial do Palco 3D
+                Div(
+                    Span("ARQUITETURA INTERATIVA 3D • ROLE PARA ESTRUTURAR", cls="text-[11px] font-mono uppercase tracking-[0.25em] text-emerald-400 block mb-2"),
+                    H2("DO CAOS OPERACIONAL", Br(), Span("à Clareza Executiva.", cls="font-playfair italic text-zinc-300 font-normal"),
+                       cls="text-3xl sm:text-5xl font-oswald uppercase tracking-tight text-white leading-[1.1]"),
+                    cls="relative z-10 pt-24 px-6 max-w-7xl mx-auto w-full pointer-events-none"
+                ),
+
+                # HUD Inferior: Telemetria do Pipeline + Botão de Simulação
+                Div(
+                    Div(
+                        Div(
+                            Span(cls="size-2 rounded-full bg-emerald-400 animate-pulse"),
+                            Span("01 // BASES DISPERSAS & CAOS OPERACIONAL", id="stage-3d-badge", cls="text-xs font-mono font-semibold text-white tracking-wider"),
+                            cls="flex items-center gap-2.5 mb-1"
+                        ),
+                        P("Entropia: 98.4% • Planilhas & Sistemas Isolados", id="stage-3d-metric", cls="text-xs font-mono text-zinc-400"),
+                        cls="glass-pill px-5 py-3.5 rounded-2xl border border-white/10"
+                    ),
+                    Button(
+                        "[ SIMULAR NOVO PIPELINE DE DADOS ↻ ]",
+                        id="simulate-3d-btn",
+                        type="button",
+                        cls="font-mono text-xs tracking-wider text-zinc-200 hover:text-black bg-[#121217]/90 hover:bg-white border border-white/15 px-5 py-3.5 rounded-2xl transition-all cursor-pointer pointer-events-auto shadow-xl"
+                    ),
+                    cls="relative z-10 pb-10 px-6 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pointer-events-none"
+                ),
+
+                cls="sticky top-0 w-full h-screen overflow-hidden flex flex-col justify-between"
+            ),
+            id="philosophy-scroll-track",
+            cls="relative w-full h-[250vh]"
+        ),
+
+        # Bloco de Filosofia que desliza por cima do palco 3D ao final do scroll
+        Div(
+            Div(
+                H2("Dashboards são fáceis.", Br(), Span("Decisões são difíceis.", cls="font-playfair italic text-zinc-400 font-normal"), cls="text-4xl sm:text-6xl font-bold tracking-tight text-white text-center mb-6 gs-scroll leading-[1.18]"),
+                P("Qualquer um pode conectar um CSV a um visualizador comercial. Meu foco é estruturar dados para que reflitam rigorosamente a realidade operacional e respondam às perguntas estratégicas da liderança.", cls="text-center text-zinc-400 max-w-2xl mx-auto mb-16 text-base sm:text-lg gs-scroll"),
+                Div(
+                    # Card 1
+                    Div(
+                        Div(
+                            Span("ETL & GOVERNANÇA", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span("01", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
+                            cls="flex items-center justify-between"
+                        ),
+                        Div(
+                            H4("Higienização & Pipeline", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P("Garbage in, garbage out. Construo rotinas automatizadas e contratos de dados para tratar anomalias antes que elas contaminem reuniões de diretoria.", cls="text-sm text-zinc-400 leading-relaxed"),
+                        ),
+                        Div(
+                            Span(cls="size-2 rounded-full bg-blue-400 mr-2.5"),
+                            Span("Dados auditáveis e consistentes", cls="text-xs font-semibold text-zinc-300"),
+                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
+                        ),
+                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
+                    ),
+                    # Card 2
+                    Div(
+                        Div(
+                            Span("ARQUITETURA RELACIONAL", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span("02", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
+                            cls="flex items-center justify-between"
+                        ),
+                        Div(
+                            H4("Modelagem Dimensional", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P("Modelos relacionais otimizados em Star Schema. Crio a fundação que permite consultas instantâneas e cruzamentos complexos para milhões de linhas.", cls="text-sm text-zinc-400 leading-relaxed"),
+                        ),
+                        Div(
+                            Span(cls="size-2 rounded-full bg-emerald-400 mr-2.5"),
+                            Span("Consultas otimizadas em SQL", cls="text-xs font-semibold text-zinc-300"),
+                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
+                        ),
+                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
+                    ),
+                    # Card 3
+                    Div(
+                        Div(
+                            Span("UI/UX & STORYTELLING", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span("03", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
+                            cls="flex items-center justify-between"
+                        ),
+                        Div(
+                            H4("Visualização Executiva", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P("O cérebro humano é visual e seletivo. Projeto telas com hierarquia óptica limpa para que gestores absorvam conclusões críticas com rapidez e clareza.", cls="text-sm text-zinc-400 leading-relaxed"),
+                        ),
+                        Div(
+                            Span(cls="size-2 rounded-full bg-amber-400 mr-2.5"),
+                            Span("Foco em alta adoção prática", cls="text-xs font-semibold text-zinc-300"),
+                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
+                        ),
+                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
+                    ),
+                    cls="grid grid-cols-1 md:grid-cols-3 gap-8"
+                ),
+                cls="max-w-6xl mx-auto px-6 py-24"
+            ),
+            cls="relative z-20 bg-[#0E0E12] border-t border-white/15 shadow-[0_-30px_60px_rgba(0,0,0,0.85)] rounded-t-[2.5rem]"
+        ),
+
+        Script(NotStr(three_js_script)),
+        id="philosophy",
+        cls="relative bg-[#0A0A0C] border-b border-white/10"
+    )
+
 def Diagnostico():
     btn = "w-full text-left p-5 rounded-2xl border border-white/10 bg-[#16161D] text-zinc-200 hover:border-white/40 hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-white transition-all font-medium text-sm md:text-base cursor-pointer"
 
@@ -936,72 +1320,8 @@ def get():
             id="work", cls="bg-[#0A0A0C] relative z-10 border-b border-white/10"
         ),
 
-        # --- PHILOSOPHY ---
-        Section(
-            Div(
-                H2("Dashboards são fáceis.", Br(), Span("Decisões são difíceis.", cls="font-playfair italic text-zinc-400 font-normal"), cls="text-4xl sm:text-6xl font-bold tracking-tight text-white text-center mb-6 gs-scroll leading-[1.18]"),
-                P("Qualquer um pode conectar um CSV a um visualizador comercial. Meu foco é estruturar dados para que reflitam rigorosamente a realidade operacional e respondam às perguntas estratégicas da liderança.", cls="text-center text-zinc-400 max-w-2xl mx-auto mb-16 text-base sm:text-lg gs-scroll"),
-                Div(
-                    # Card 1
-                    Div(
-                        Div(
-                            Span("ETL & GOVERNANÇA", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
-                            Span("01", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
-                            cls="flex items-center justify-between"
-                        ),
-                        Div(
-                            H4("Higienização & Pipeline", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("Garbage in, garbage out. Construo rotinas automatizadas e contratos de dados para tratar anomalias antes que elas contaminem reuniões de diretoria.", cls="text-sm text-zinc-400 leading-relaxed"),
-                        ),
-                        Div(
-                            Span(cls="size-2 rounded-full bg-blue-400 mr-2.5"),
-                            Span("Dados auditáveis e consistentes", cls="text-xs font-semibold text-zinc-300"),
-                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
-                        ),
-                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
-                    ),
-                    # Card 2
-                    Div(
-                        Div(
-                            Span("ARQUITETURA RELACIONAL", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
-                            Span("02", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
-                            cls="flex items-center justify-between"
-                        ),
-                        Div(
-                            H4("Modelagem Dimensional", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("Modelos relacionais otimizados em Star Schema. Crio a fundação que permite consultas instantâneas e cruzamentos complexos para milhões de linhas.", cls="text-sm text-zinc-400 leading-relaxed"),
-                        ),
-                        Div(
-                            Span(cls="size-2 rounded-full bg-emerald-400 mr-2.5"),
-                            Span("Consultas otimizadas em SQL", cls="text-xs font-semibold text-zinc-300"),
-                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
-                        ),
-                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
-                    ),
-                    # Card 3
-                    Div(
-                        Div(
-                            Span("UI/UX & STORYTELLING", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
-                            Span("03", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
-                            cls="flex items-center justify-between"
-                        ),
-                        Div(
-                            H4("Visualização Executiva", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("O cérebro humano é visual e seletivo. Projeto telas com hierarquia óptica limpa para que gestores absorvam conclusões críticas com rapidez e clareza.", cls="text-sm text-zinc-400 leading-relaxed"),
-                        ),
-                        Div(
-                            Span(cls="size-2 rounded-full bg-amber-400 mr-2.5"),
-                            Span("Foco em alta adoção prática", cls="text-xs font-semibold text-zinc-300"),
-                            cls="flex items-center pt-6 mt-6 border-t border-white/10"
-                        ),
-                        cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
-                    ),
-                    cls="grid grid-cols-1 md:grid-cols-3 gap-8"
-                ),
-                cls="max-w-6xl mx-auto px-6 py-24"
-            ),
-            id="philosophy", cls="relative z-10 bg-[#0E0E12] border-b border-white/10"
-        ),
+        # --- PHILOSOPHY (COM CENA 3D INTERATIVA) ---
+        DataJourney3DSection(),
 
         # --- BENTO GRID: CAPACIDADES TÉCNICAS (Impressão Digital em Dark Mode) ---
         Section(
