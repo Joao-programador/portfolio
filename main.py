@@ -62,9 +62,9 @@ window.featureCarousel = function() {
                 iframe_src: "/Projetos/Mapa de Estacionamentos/index.html"
             },
             {
-                label: "Performance Operacional",
-                tag: "Eficiência & KPIs",
-                iframe_src: "/Projetos/Performance Operacional.html"
+                label: "Gestão Operacional (SGO)",
+                tag: "Eficiência Estratégica",
+                iframe_src: "/Projetos/Painel de Performance Operacional/index.html"
             }
         ],
         get currentModalFeature() {
@@ -202,6 +202,31 @@ window.featureCarousel = function() {
             .mask-marquee {
                 mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
                 -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+            }
+
+            @keyframes bioScan {
+                0%, 100% { transform: translateY(-38px); opacity: 0.35; }
+                50% { transform: translateY(38px); opacity: 1; }
+            }
+            .group:hover .bio-scanner-line {
+                animation: bioScan 2.4s ease-in-out infinite;
+            }
+            @keyframes slowOrbit {
+                0% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(4deg) scale(1.04); }
+                100% { transform: rotate(0deg) scale(1); }
+            }
+            .group:hover .integrity-orbit {
+                animation: slowOrbit 4s ease-in-out infinite;
+                color: rgba(52, 211, 153, 0.28);
+            }
+            @keyframes pulseDash {
+                0% { stroke-dasharray: 400; stroke-dashoffset: 400; }
+                100% { stroke-dasharray: 400; stroke-dashoffset: 0; }
+            }
+            .group:hover .perf-line-svg {
+                animation: pulseDash 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                stroke: #34d399;
             }
 
             @media (prefers-reduced-motion: reduce) {
@@ -770,6 +795,10 @@ def DataJourney3DSection():
         gsap.registerPlugin(ScrollTrigger);
 
         const container = document.getElementById('data-3d-canvas');
+        const tooltip = document.getElementById('node-3d-tooltip');
+        const ttId = document.getElementById('tt-node-id');
+        const ttKpi = document.getElementById('tt-node-kpi');
+        const ttMeta = document.getElementById('tt-node-meta');
         if (!container) return;
 
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -794,7 +823,7 @@ def DataJourney3DSection():
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xf4f4f6, 1.1);
+        const dirLight = new THREE.DirectionalLight(0xf4f4f6, 1.15);
         dirLight.position.set(16, 30, 20);
         dirLight.castShadow = true;
         dirLight.shadow.mapSize.width = 1024;
@@ -806,7 +835,7 @@ def DataJourney3DSection():
         dirLight.shadow.camera.bottom = -d;
         scene.add(dirLight);
 
-        const emeraldLight = new THREE.PointLight(0x34d399, 0.8, 30);
+        const emeraldLight = new THREE.PointLight(0x34d399, 0.9, 32);
         emeraldLight.position.set(-8, 8, 8);
         scene.add(emeraldLight);
 
@@ -826,10 +855,10 @@ def DataJourney3DSection():
         gridHelper.scale.z = 11.5 / 17;
         boardGroup.add(gridHelper);
 
-        // 4. INSTANCED MESH (480 Nós de Dados: Caos -> Star Schema / BI)
+        // 4. INSTANCED MESH (480 Nós de Dados)
         const COLS = 10, ROWS = 6, MAX_STACK = 11, TOTAL = 480;
         const cubeGeo = new THREE.BoxGeometry(0.8, 0.4, 0.8);
-        const cubeMat = new THREE.MeshStandardMaterial({ roughness: 0.25, metalness: 0.2 });
+        const cubeMat = new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.25 });
         const instancedData = new THREE.InstancedMesh(cubeGeo, cubeMat, TOTAL);
         instancedData.castShadow = true;
         instancedData.receiveShadow = true;
@@ -839,84 +868,203 @@ def DataJourney3DSection():
             new THREE.Color(0x27272a), // Zinc-800
             new THREE.Color(0x52525b), // Zinc-600
             new THREE.Color(0xa1a1aa), // Zinc-400
-            new THREE.Color(0xf4f4f6), // Branco
+            new THREE.Color(0xf4f4f6), // Branco Puro
             new THREE.Color(0x34d399)  // Emerald-400 (KPI Destaque)
         ];
 
         const chaosState = [];
-        const insightState = [];
+        const currentInsight = [];
+        const targetInsight = [];
+        const nodeMetadata = [];
         const dummy = new THREE.Object3D();
+        let currentMode = 'olap'; // 'olap' | 'star' | 'gauss'
 
-        function generatePipelineData() {
-            chaosState.length = 0;
-            insightState.length = 0;
+        const kpiLabels = [
+            "SLA CONCESSÃO PÚBLICA", "AUDITORIA DE FLUXO", "MODELO CAPEX/OPEX",
+            "ÍNDICE DE MOBILIDADE SP", "RECEITA DE OUTORGA", "EFICIÊNCIA SGO"
+        ];
 
-            const heights = [];
-            for (let c = 0; c < COLS; c++) {
-                heights[c] = [];
-                for (let r = 0; r < ROWS; r++) {
-                    const trend = (c / COLS) * 5.5;
-                    heights[c][r] = Math.max(1, Math.min(MAX_STACK, Math.floor(Math.random() * 6 + trend + 1)));
-                }
-            }
+        // Inicializar estado de Caos uma única vez + Metadados para o Tooltip
+        for (let i = 0; i < TOTAL; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 2 + Math.random() * 13;
+            chaosState.push({
+                x: Math.cos(angle) * radius,
+                y: 3.5 + Math.random() * 13,
+                z: Math.sin(angle) * (radius * 0.75),
+                rx: (Math.random() - 0.5) * Math.PI * 2,
+                ry: (Math.random() - 0.5) * Math.PI * 2,
+                rz: (Math.random() - 0.5) * Math.PI * 2,
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.5 + Math.random() * 1.0
+            });
+            currentInsight.push({ x: 0, y: 0, z: 0 });
+            targetInsight.push({ x: 0, y: 0, z: 0 });
+            nodeMetadata.push({
+                id: `NODE_${String(i + 1).padStart(3, '0')}`,
+                kpi: kpiLabels[i % kpiLabels.length],
+                val: `${(92 + Math.random() * 7.9).toFixed(1)}%`,
+                lat: `${Math.floor(2 + Math.random() * 9)}ms`
+            });
+        }
 
+        function computeTopology(mode) {
+            currentMode = mode;
             let idx = 0;
-            const spX = 1.42, spZ = 1.42;
-            const stX = -((COLS - 1) * spX) / 2;
-            const stZ = -((ROWS - 1) * spZ) / 2;
 
-            for (let c = 0; c < COLS; c++) {
-                for (let r = 0; r < ROWS; r++) {
-                    const h = heights[c][r];
-                    for (let s = 0; s < h; s++) {
+            if (mode === 'olap') {
+                // MODO 1: Matriz Dimensional OLAP (Barras Executivas)
+                const spX = 1.42, spZ = 1.42;
+                const stX = -((COLS - 1) * spX) / 2;
+                const stZ = -((ROWS - 1) * spZ) / 2;
+                const heights = [];
+
+                for (let c = 0; c < COLS; c++) {
+                    heights[c] = [];
+                    for (let r = 0; r < ROWS; r++) {
+                        const trend = (c / COLS) * 5.5;
+                        heights[c][r] = Math.max(1, Math.min(MAX_STACK, Math.floor(Math.random() * 6 + trend + 1)));
+                    }
+                }
+
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r < ROWS; r++) {
+                        const h = heights[c][r];
+                        for (let s = 0; s < h; s++) {
+                            if (idx >= TOTAL) break;
+                            targetInsight[idx] = { x: stX + c * spX, y: 0.22 + s * 0.44, z: stZ + r * spZ };
+                            let cIdx = 0;
+                            if (h >= 9 && s === h - 1) cIdx = 4;
+                            else if (h >= 7) cIdx = 3;
+                            else if (h >= 5) cIdx = 2;
+                            else if (h >= 3) cIdx = 1;
+                            instancedData.setColorAt(idx, palette[cIdx]);
+                            idx++;
+                        }
+                    }
+                }
+                while (idx < TOTAL) {
+                    const c = idx % COLS;
+                    const r = Math.floor(idx / COLS) % ROWS;
+                    const s = heights[c][r]++;
+                    targetInsight[idx] = { x: stX + c * spX, y: 0.22 + s * 0.44, z: stZ + r * spZ };
+                    instancedData.setColorAt(idx, palette[2]);
+                    idx++;
+                }
+            } else if (mode === 'star') {
+                // MODO 2: Star Schema Relacional (1 Tabela Fato Central + 6 Tabelas Dimensão Satélites)
+                // 180 blocos no núcleo central (Fato) + 50 blocos em cada um dos 6 satélites (Dimensões)
+                const factCols = 5, factRows = 5;
+                for (let i = 0; i < 180; i++) {
+                    const c = i % factCols;
+                    const r = Math.floor(i / factCols) % factRows;
+                    const s = Math.floor(i / (factCols * factRows));
+                    targetInsight[idx] = {
+                        x: (c - 2) * 0.88,
+                        y: 0.22 + s * 0.44,
+                        z: (r - 2) * 0.88
+                    };
+                    instancedData.setColorAt(idx, s >= 6 ? palette[4] : palette[3]);
+                    idx++;
+                }
+                const satellites = 6;
+                const radius = 5.4;
+                for (let sat = 0; sat < satellites; sat++) {
+                    const angle = (sat / satellites) * Math.PI * 2;
+                    const cx = Math.cos(angle) * radius;
+                    const cz = Math.sin(angle) * (radius * 0.72);
+                    for (let j = 0; j < 50; j++) {
                         if (idx >= TOTAL) break;
-                        insightState.push({
-                            x: stX + c * spX,
-                            y: 0.22 + s * 0.44,
-                            z: stZ + r * spZ
-                        });
-
-                        const angle = Math.random() * Math.PI * 2;
-                        const radius = 2 + Math.random() * 13;
-                        chaosState.push({
-                            x: Math.cos(angle) * radius,
-                            y: 3.5 + Math.random() * 13,
-                            z: Math.sin(angle) * (radius * 0.75),
-                            rx: (Math.random() - 0.5) * Math.PI * 2,
-                            ry: (Math.random() - 0.5) * Math.PI * 2,
-                            rz: (Math.random() - 0.5) * Math.PI * 2,
-                            phase: Math.random() * Math.PI * 2,
-                            speed: 0.5 + Math.random() * 1.0
-                        });
-
-                        let cIdx = 0;
-                        if (h >= 9 && s === h - 1) cIdx = 4;
-                        else if (h >= 7) cIdx = 3;
-                        else if (h >= 5) cIdx = 2;
-                        else if (h >= 3) cIdx = 1;
-                        instancedData.setColorAt(idx, palette[cIdx]);
+                        const sc = j % 3;
+                        const sr = Math.floor(j / 3) % 3;
+                        const ss = Math.floor(j / 9);
+                        targetInsight[idx] = {
+                            x: cx + (sc - 1) * 0.85,
+                            y: 0.22 + ss * 0.44,
+                            z: cz + (sr - 1) * 0.85
+                        };
+                        instancedData.setColorAt(idx, ss >= 4 ? palette[4] : palette[2]);
                         idx++;
                     }
                 }
+            } else if (mode === 'gauss') {
+                // MODO 3: Distribuição Normal / Superfície Gaussiana 3D
+                const gCols = 12, gRows = 8;
+                const spX = 1.25, spZ = 1.22;
+                const stX = -((gCols - 1) * spX) / 2;
+                const stZ = -((gRows - 1) * spZ) / 2;
+
+                for (let c = 0; c < gCols; c++) {
+                    for (let r = 0; r < gRows; r++) {
+                        const dx = (c - (gCols - 1) / 2) / 3.2;
+                        const dz = (r - (gRows - 1) / 2) / 2.2;
+                        const bell = Math.exp(-(dx * dx + dz * dz));
+                        const h = Math.max(1, Math.round(bell * 11));
+                        for (let s = 0; s < h; s++) {
+                            if (idx >= TOTAL) break;
+                            targetInsight[idx] = {
+                                x: stX + c * spX,
+                                y: 0.22 + s * 0.44,
+                                z: stZ + r * spZ
+                            };
+                            let cIdx = 1;
+                            if (h >= 9 && s === h - 1) cIdx = 4;
+                            else if (h >= 7) cIdx = 3;
+                            else if (h >= 4) cIdx = 2;
+                            instancedData.setColorAt(idx, palette[cIdx]);
+                            idx++;
+                        }
+                    }
+                }
+                while (idx < TOTAL) {
+                    const ring = idx % gCols;
+                    targetInsight[idx] = {
+                        x: stX + ring * spX,
+                        y: 0.22,
+                        z: stZ + (idx % gRows) * spZ
+                    };
+                    instancedData.setColorAt(idx, palette[0]);
+                    idx++;
+                }
             }
 
-            while (idx < TOTAL) {
-                const c = idx % COLS;
-                const r = Math.floor(idx / COLS) % ROWS;
-                const s = heights[c][r]++;
-                insightState.push({ x: stX + c * spX, y: 0.22 + s * 0.44, z: stZ + r * spZ });
-                chaosState.push({
-                    x: (Math.random() - 0.5) * 22, y: 4 + Math.random() * 12, z: (Math.random() - 0.5) * 16,
-                    rx: Math.random() * 3, ry: Math.random() * 3, rz: Math.random() * 3,
-                    phase: Math.random() * Math.PI, speed: 0.8
-                });
-                instancedData.setColorAt(idx, palette[2]);
-                idx++;
-            }
             instancedData.instanceColor.needsUpdate = true;
         }
 
-        generatePipelineData();
+        // Inicializar na topologia OLAP
+        computeTopology('olap');
+        for (let i = 0; i < TOTAL; i++) {
+            currentInsight[i].x = targetInsight[i].x;
+            currentInsight[i].y = targetInsight[i].y;
+            currentInsight[i].z = targetInsight[i].z;
+        }
+
+        // Função para alternar Topologia com transição suave
+        function switchTopology(mode) {
+            computeTopology(mode);
+            for (let i = 0; i < TOTAL; i++) {
+                gsap.to(currentInsight[i], {
+                    x: targetInsight[i].x,
+                    y: targetInsight[i].y,
+                    z: targetInsight[i].z,
+                    duration: 0.85,
+                    ease: "power3.inOut"
+                });
+            }
+            gsap.fromTo(boardGroup.rotation, { y: boardGroup.rotation.y - 0.22 }, { y: boardGroup.rotation.y, duration: 0.8, ease: "back.out(1.7)" });
+
+            document.querySelectorAll('.topo-btn').forEach(btn => {
+                if (btn.dataset.topo === mode) {
+                    btn.className = "topo-btn font-mono text-[10px] sm:text-xs tracking-wider bg-white text-black font-semibold px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-md";
+                } else {
+                    btn.className = "topo-btn font-mono text-[10px] sm:text-xs tracking-wider text-zinc-300 hover:text-white bg-[#121217]/90 border border-white/10 px-3.5 py-2 rounded-xl transition-all cursor-pointer";
+                }
+            });
+        }
+
+        document.querySelectorAll('.topo-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTopology(btn.dataset.topo));
+        });
 
         // 5. SCROLLTRIGGER ATRELADO AO TRACK #philosophy-scroll-track
         const state = {
@@ -945,10 +1093,10 @@ def DataJourney3DSection():
                             stageMetric.textContent = `Entropia: ${(98.4 - p * 110).toFixed(1)}% • Planilhas & Sistemas Isolados`;
                         } else if (p < 0.72) {
                             stageBadge.textContent = "02 // PIPELINE PYTHON & STAR SCHEMA SQL";
-                            stageMetric.textContent = `Higienização & Modelagem: ${Math.min(99, Math.floor(p * 130))}% • Auditando Linhas`;
+                            stageMetric.textContent = `Modelagem & Validação: ${Math.min(99, Math.floor(p * 130))}% • Tratamento de Anomalias`;
                         } else {
-                            stageBadge.textContent = "03 // COCKPIT EXECUTIVO C-LEVEL (< 5s)";
-                            stageMetric.textContent = "Integridade: 100% • Decisões Auditáveis em Tempo Real";
+                            stageBadge.textContent = "03 // COCKPIT EXECUTIVO C-LEVEL";
+                            stageMetric.textContent = "Consistência Auditável • Passe o mouse nos blocos para inspecionar";
                         }
                     }
                 }
@@ -964,21 +1112,29 @@ def DataJourney3DSection():
             });
         }
 
-        const simBtn = document.getElementById('simulate-3d-btn');
-        if (simBtn) {
-            simBtn.addEventListener('click', () => {
-                generatePipelineData();
-                gsap.fromTo(boardGroup.rotation, { y: boardGroup.rotation.y - 0.3 }, { y: boardGroup.rotation.y, duration: 0.7, ease: "back.out(1.7)" });
-            });
-        }
-
+        // 6. RAYCASTER PARA INSPEÇÃO TÁTIL DE NÓS 3D + TOOLTIP HUD
+        const raycaster = new THREE.Raycaster();
+        const mouseNDC = new THREE.Vector2(-999, -999);
         let mouseX = 0, mouseY = 0;
+        let hoveredInstance = -1;
+
         window.addEventListener('mousemove', (e) => {
             mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
             mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+
+            const rect = container.getBoundingClientRect();
+            if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                if (tooltip) {
+                    tooltip.style.left = `${e.clientX + 18}px`;
+                    tooltip.style.top = `${e.clientY - 18}px`;
+                }
+            } else {
+                mouseNDC.set(-999, -999);
+            }
         });
 
-        // Pausa automática da renderização quando fora da viewport para economizar GPU
         let isVisible = true;
         const observer = new IntersectionObserver((entries) => {
             isVisible = entries[0].isIntersecting;
@@ -994,17 +1150,43 @@ def DataJourney3DSection():
             const t = state.progress;
             const chaosFactor = 1 - t;
 
+            // Checar interseção de Raycaster quando os dados estão visíveis
+            if (mouseNDC.x !== -999 && t > 0.45) {
+                raycaster.setFromCamera(mouseNDC, camera);
+                const hits = raycaster.intersectObject(instancedData);
+                if (hits.length > 0 && hits[0].instanceId !== undefined) {
+                    hoveredInstance = hits[0].instanceId;
+                    const meta = nodeMetadata[hoveredInstance];
+                    if (tooltip && ttId && ttKpi && ttMeta) {
+                        ttId.textContent = meta.id;
+                        ttKpi.textContent = meta.kpi;
+                        ttMeta.textContent = `CONFORMIDADE: ${meta.val} • QUERY: ${meta.lat}`;
+                        tooltip.style.opacity = '1';
+                    }
+                } else {
+                    hoveredInstance = -1;
+                    if (tooltip) tooltip.style.opacity = '0';
+                }
+            } else {
+                hoveredInstance = -1;
+                if (tooltip) tooltip.style.opacity = '0';
+            }
+
             for (let i = 0; i < TOTAL; i++) {
                 const c = chaosState[i];
-                const ins = insightState[i];
+                const ins = currentInsight[i];
 
                 const fx = Math.sin(elapsed * c.speed + c.phase) * 0.45 * chaosFactor;
                 const fy = Math.cos(elapsed * c.speed + c.phase) * 0.45 * chaosFactor;
                 const fz = Math.sin(elapsed * 0.7 * c.speed + c.phase) * 0.45 * chaosFactor;
 
+                // Elevação tátil se o bloco estiver sob o cursor do mouse
+                const hoverLift = (i === hoveredInstance) ? 0.32 : 0;
+                const hoverScale = (i === hoveredInstance) ? 1.16 : 1.0;
+
                 dummy.position.set(
                     THREE.MathUtils.lerp(c.x, ins.x, t) + fx,
-                    THREE.MathUtils.lerp(c.y, ins.y, t) + fy,
+                    THREE.MathUtils.lerp(c.y, ins.y, t) + fy + hoverLift,
                     THREE.MathUtils.lerp(c.z, ins.z, t) + fz
                 );
                 dummy.rotation.set(
@@ -1012,6 +1194,7 @@ def DataJourney3DSection():
                     THREE.MathUtils.lerp(c.ry + elapsed * 0.35, 0, t),
                     THREE.MathUtils.lerp(c.rz, 0, t)
                 );
+                dummy.scale.set(hoverScale, hoverScale, hoverScale);
                 dummy.updateMatrix();
                 instancedData.setMatrixAt(i, dummy.matrix);
             }
@@ -1041,6 +1224,19 @@ def DataJourney3DSection():
     """
 
     return Section(
+        # Tooltip Flutuante de Inspeção Tátil 3D (Raycaster HUD)
+        Div(
+            Div(
+                Span(cls="size-1.5 rounded-full bg-emerald-400"),
+                Span("NODE_001", id="tt-node-id", cls="text-[10px] font-mono font-bold text-emerald-400 tracking-wider"),
+                cls="flex items-center gap-1.5 mb-0.5"
+            ),
+            Div("SLA CONCESSÃO PÚBLICA", id="tt-node-kpi", cls="text-xs font-bold text-white tracking-tight"),
+            Div("CONFORMIDADE: 99.4% • QUERY: 4ms", id="tt-node-meta", cls="text-[10px] font-mono text-zinc-400 mt-0.5"),
+            id="node-3d-tooltip",
+            cls="fixed z-50 pointer-events-none opacity-0 transition-opacity duration-150 bg-[#0A0A0E]/95 backdrop-blur-md border border-emerald-500/30 px-3.5 py-2.5 rounded-xl shadow-2xl"
+        ),
+
         # Track de Scroll (250vh) onde a câmera 3D viaja do Caos ao Insight
         Div(
             Div(
@@ -1048,13 +1244,13 @@ def DataJourney3DSection():
 
                 # Header Editorial do Palco 3D
                 Div(
-                    Span("ARQUITETURA INTERATIVA 3D • ROLE PARA ESTRUTURAR", cls="text-[11px] font-mono uppercase tracking-[0.25em] text-emerald-400 block mb-2"),
+                    Span("ARQUITETURA INTERATIVA 3D • ROLE E INSPECIONE OS NÓS", cls="text-[11px] font-mono uppercase tracking-[0.25em] text-emerald-400 block mb-2"),
                     H2("DO CAOS OPERACIONAL", Br(), Span("à Clareza Executiva.", cls="font-playfair italic text-zinc-300 font-normal"),
                        cls="text-3xl sm:text-5xl font-oswald uppercase tracking-tight text-white leading-[1.1]"),
                     cls="relative z-10 pt-24 px-6 max-w-7xl mx-auto w-full pointer-events-none"
                 ),
 
-                # HUD Inferior: Telemetria do Pipeline + Botão de Simulação
+                # HUD Inferior: Telemetria do Pipeline + Seletor de 3 Topologias Matemáticas
                 Div(
                     Div(
                         Div(
@@ -1065,13 +1261,30 @@ def DataJourney3DSection():
                         P("Entropia: 98.4% • Planilhas & Sistemas Isolados", id="stage-3d-metric", cls="text-xs font-mono text-zinc-400"),
                         cls="glass-pill px-5 py-3.5 rounded-2xl border border-white/10"
                     ),
-                    Button(
-                        "[ SIMULAR NOVO PIPELINE DE DADOS ↻ ]",
-                        id="simulate-3d-btn",
-                        type="button",
-                        cls="font-mono text-xs tracking-wider text-zinc-200 hover:text-black bg-[#121217]/90 hover:bg-white border border-white/15 px-5 py-3.5 rounded-2xl transition-all cursor-pointer pointer-events-auto shadow-xl"
+                    # Seletor Multi-Topologia (OLAP | Star Schema | Gaussiana)
+                    Div(
+                        Span("TOPOLOGIA:", cls="hidden md:inline-block text-[10px] font-mono text-zinc-400 uppercase tracking-widest mr-1"),
+                        Button(
+                            "01. MATRIZ OLAP",
+                            type="button",
+                            data_topo="olap",
+                            cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider bg-white text-black font-semibold px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+                        ),
+                        Button(
+                            "02. STAR SCHEMA",
+                            type="button",
+                            data_topo="star",
+                            cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider text-zinc-300 hover:text-white bg-[#121217]/90 border border-white/10 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+                        ),
+                        Button(
+                            "03. GAUSSIANA 3D",
+                            type="button",
+                            data_topo="gauss",
+                            cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider text-zinc-300 hover:text-white bg-[#121217]/90 border border-white/10 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+                        ),
+                        cls="flex flex-wrap items-center gap-2 pointer-events-auto glass-pill p-2 rounded-2xl border border-white/10"
                     ),
-                    cls="relative z-10 pb-10 px-6 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 pointer-events-none"
+                    cls="relative z-10 pb-10 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 pointer-events-none"
                 ),
 
                 id="data-3d-stage",
@@ -1114,7 +1327,7 @@ def DataJourney3DSection():
                         ),
                         Div(
                             H4("Modelagem Dimensional", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("Modelos relacionais otimizados em Star Schema. Crio a fundação que permite consultas instantâneas e cruzamentos complexos para milhões de linhas.", cls="text-sm text-zinc-400 leading-relaxed"),
+                            P("Modelos relacionais otimizados em Star Schema. Crio a fundação que permite consultas de alta performance e cruzamentos analíticos para bases públicas e operacionais complexas.", cls="text-sm text-zinc-400 leading-relaxed"),
                         ),
                         Div(
                             Span(cls="size-2 rounded-full bg-emerald-400 mr-2.5"),
@@ -1399,28 +1612,28 @@ def get():
                 # Metric 1
                 Div(
                     H3("+3 ANOS", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Gerando inteligência na ", Strong("Pref. de São Paulo", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
+                    P("Inteligência na ", Strong("Pref. de São Paulo / SPP", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
                     cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
                 ),
                 Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
                 # Metric 2
                 Div(
-                    H3("10M+", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Linhas auditadas em ", Strong("Pipelines Automatizados", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
+                    H3("CONCESSÕES", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
+                    P("Auditoria de ", Strong("Contratos Públicos & SLAs", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
                     cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
                 ),
                 Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
                 # Metric 3
                 Div(
-                    H3("100%", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Modelagem em ", Strong("Star Schema", cls="text-zinc-200"), " relacional", cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
+                    H3("STAR SCHEMA", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
+                    P("Modelagem dimensional & ", Strong("Integridade em SQL", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
                     cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
                 ),
                 Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
                 # Metric 4
                 Div(
-                    H3("< 5s", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-emerald-400"),
-                    P("Tempo de insight para ", Strong("Diretoria e Gestores", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
+                    H3("DECISÃO C-LEVEL", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-emerald-400"),
+                    P("Cockpits estratégicos de ", Strong("Alta Adoção Executiva", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
                     cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
                 ),
                 cls="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between px-6 gap-4 sm:gap-0"
@@ -1464,20 +1677,20 @@ def get():
                     Div(
                         Div(
                             Div(
-                                NotStr('''<svg class="text-white/10 absolute inset-0 size-full pointer-events-none" viewBox="0 0 254 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                NotStr('''<svg class="integrity-orbit transition-colors duration-500 text-white/10 absolute inset-0 size-full pointer-events-none" viewBox="0 0 254 104" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M112.891 97.7022C140.366 97.0802 171.004 94.6715 201.087 87.5116C210.43 85.2881 219.615 82.6412 228.284 78.2473C232.198 76.3179 235.905 73.9942 239.348 71.3124C241.85 69.2557 243.954 66.7571 245.555 63.9408C249.34 57.3235 248.281 50.5341 242.498 45.6109C239.033 42.7237 235.228 40.2703 231.169 38.3054C219.443 32.7209 207.141 28.4382 194.482 25.534C184.013 23.1927 173.358 21.7755 162.64 21.2989C161.376 21.3512 160.113 21.181 158.908 20.796C158.034 20.399 156.857 19.1682 156.962 18.4535C157.115 17.8927 157.381 17.3689 157.743 16.9139C158.104 16.4588 158.555 16.0821 159.067 15.8066C160.14 15.4683 161.274 15.3733 162.389 15.5286C179.805 15.3566 196.626 18.8373 212.998 24.462C220.978 27.2494 228.798 30.4747 236.423 34.1232C240.476 36.1159 244.202 38.7131 247.474 41.8258C254.342 48.2578 255.745 56.9397 251.841 65.4892C249.793 69.8582 246.736 73.6777 242.921 76.6327C236.224 82.0192 228.522 85.4602 220.502 88.2924C205.017 93.7847 188.964 96.9081 172.738 99.2109C153.442 101.949 133.993 103.478 114.506 103.79C91.1468 104.161 67.9334 102.97 45.1169 97.5831C36.0094 95.5616 27.2626 92.1655 19.1771 87.5116C13.839 84.5746 9.1557 80.5802 5.41318 75.7725C-0.54238 67.7259 -1.13794 59.1763 3.25594 50.2827C5.82447 45.3918 9.29572 41.0315 13.4863 37.4319C24.2989 27.5721 37.0438 20.9681 50.5431 15.7272C68.1451 8.8849 86.4883 5.1395 105.175 2.83669C129.045 0.0992292 153.151 0.134761 177.013 2.94256C197.672 5.23215 218.04 9.01724 237.588 16.3889C240.089 17.3418 242.498 18.5197 244.933 19.6446C246.627 20.4387 247.725 21.6695 246.997 23.615C246.455 25.1105 244.814 25.5605 242.63 24.5811C230.322 18.9961 217.233 16.1904 204.117 13.4376C188.761 10.3438 173.2 8.36665 157.558 7.52174C129.914 5.70776 102.154 8.06792 75.2124 14.5228C60.6177 17.8788 46.5758 23.2977 33.5102 30.6161C26.6595 34.3329 20.4123 39.0673 14.9818 44.658C12.9433 46.8071 11.1336 49.1622 9.58207 51.6855C4.87056 59.5336 5.61172 67.2494 11.9246 73.7608C15.2064 77.0494 18.8775 79.925 22.8564 82.3236C31.6176 87.7101 41.3848 90.5291 51.3902 92.5804C70.6068 96.5773 90.0219 97.7419 112.891 97.7022Z" fill="currentColor"/>
                                 </svg>'''),
-                                Span("100%", cls="text-5xl font-oswald font-bold text-white z-10 block"),
+                                Span("AUDIT", cls="text-4xl font-oswald font-bold tracking-widest text-white z-10 block"),
                                 cls="relative flex h-24 w-56 items-center justify-center"
                             ),
                             Div(
                                 H3("Integridade & Auditoria", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                P("Modelagem com validações contínuas, sem duplicações ou inconsistências analíticas.", cls="text-sm text-zinc-400 mt-1"),
+                                P("Modelagem relacional com validações contínuas para prestação de contas aos órgãos de controle.", cls="text-sm text-zinc-400 mt-1"),
                                 cls="mt-8 text-center"
                             ),
                             cls="relative m-auto size-fit pt-6"
                         ),
-                        cls="relative col-span-full flex flex-col justify-between overflow-hidden lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
+                        cls="group relative col-span-full flex flex-col justify-between overflow-hidden lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
                     # Card 2: Radar / Conexões Concêntricas
@@ -1486,7 +1699,7 @@ def get():
                             Div(
                                 NotStr('''<svg class="m-auto h-fit w-24 text-zinc-400" viewBox="0 0 212 143" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path class="text-zinc-600" d="M44.0209 55.3542C43.1945 54.7639 42.6916 54.0272 42.5121 53.1442C42.3327 52.2611 42.5995 51.345 43.3125 50.3958C50.632 40.3611 59.812 32.5694 70.8525 27.0208C81.8931 21.4722 93.668 18.6979 106.177 18.6979C118.691 18.6979 130.497 21.3849 141.594 26.7587C152.691 32.1326 161.958 39.8936 169.396 50.0417C170.222 51.1042 170.489 52.0486 170.196 52.875C169.904 53.7014 169.401 54.4097 168.688 55C167.979 55.5903 167.153 55.8571 166.208 55.8004C165.264 55.7437 164.438 55.2408 163.729 54.2917C157.236 45.0833 148.885 38.0307 138.675 33.1337C128.466 28.2368 117.633 25.786 106.177 25.7812C94.7257 25.7812 83.9827 28.2321 73.948 33.1337C63.9132 38.0354 55.5903 45.0881 48.9792 54.2917C48.2709 55.3542 47.4445 55.9444 46.5 56.0625C45.5556 56.1806 44.7292 55.9444 44.0209 55.3542ZM126.188 142.656C113.91 139.587 103.875 133.476 96.0834 124.325C88.2917 115.173 84.3959 103.988 84.3959 90.7708C84.3959 84.8681 86.5209 79.9097 90.7709 75.8958C95.0209 71.8819 100.156 69.875 106.177 69.875C112.198 69.875 117.333 71.8819 121.583 75.8958C125.833 79.9097 127.958 84.8681 127.958 90.7708C127.958 94.6667 129.434 97.9439 132.385 100.602C135.337 103.261 138.819 104.588 142.833 104.583C146.847 104.583 150.271 103.256 153.104 100.602C155.938 97.9486 157.354 94.6714 157.354 90.7708C157.354 77.0764 152.337 65.566 142.302 56.2396C132.267 46.9132 120.285 42.25 106.354 42.25C92.4237 42.25 80.441 46.9132 70.4063 56.2396C60.3716 65.566 55.3542 77.0174 55.3542 90.5937C55.3542 93.4271 55.621 96.9687 56.1546 101.219C56.6882 105.469 57.9562 110.427 59.9584 116.094C60.3125 117.156 60.2842 118.101 59.8734 118.927C59.4625 119.753 58.7825 120.344 57.8334 120.698C56.8889 121.052 55.9752 121.024 55.0921 120.613C54.2091 120.202 53.5881 119.522 53.2292 118.573C51.4584 113.969 50.1905 109.395 49.4255 104.853C48.6605 100.31 48.2756 95.6158 48.2709 90.7708C48.2709 75.0694 53.9682 61.9062 65.363 51.2812C76.7577 40.6562 90.3624 35.3437 106.177 35.3437C122.115 35.3437 135.809 40.6562 147.26 51.2812C158.712 61.9062 164.438 75.0694 164.438 90.7708C164.438 96.6736 162.343 101.601 158.155 105.554C153.966 109.506 148.859 111.485 142.833 111.49C136.813 111.49 131.649 109.513 127.342 105.561C123.035 101.608 120.88 96.6783 120.875 90.7708C120.875 86.875 119.43 83.5978 116.54 80.9392C113.65 78.2805 110.196 76.9536 106.177 76.9583C102.163 76.9583 98.7089 78.2876 95.8142 80.9462C92.9195 83.6049 91.4745 86.8797 91.4792 90.7708C91.4792 102.222 94.8745 111.785 101.665 119.458C108.456 127.132 117.22 132.503 127.958 135.573C129.021 135.927 129.729 136.517 130.083 137.344C130.438 138.17 130.497 139.056 130.26 140C130.024 140.826 129.552 141.535 128.844 142.125C128.135 142.715 127.25 142.892 126.188 142.656ZM67.0417 18.3437C66.0973 18.934 65.1528 19.0828 64.2084 18.79C63.2639 18.4972 62.5556 17.8762 62.0834 16.9271C61.6112 15.9826 61.4931 15.1279 61.7292 14.3629C61.9653 13.5979 62.5556 12.9179 63.5 12.3229C70.1112 8.78125 77.0174 6.06597 84.2188 4.17708C91.4202 2.28819 98.7396 1.34375 106.177 1.34375C113.733 1.34375 121.111 2.25986 128.313 4.09208C135.514 5.92431 142.479 8.54986 149.208 11.9687C150.271 12.559 150.892 13.2674 151.071 14.0937C151.251 14.9201 151.161 15.7465 150.802 16.5729C150.448 17.3993 149.858 18.0486 149.031 18.5208C148.205 18.9931 147.201 18.934 146.021 18.3437C139.764 15.1563 133.299 12.7078 126.627 10.9983C119.954 9.28889 113.138 8.43181 106.177 8.42708C99.3299 8.42708 92.6007 9.22514 85.9896 10.8212C79.3785 12.4174 73.0625 14.9249 67.0417 18.3437ZM87.9375 140.177C80.9723 132.858 75.6314 125.392 71.915 117.78C68.1987 110.167 66.3381 101.164 66.3334 90.7708C66.3334 80.0278 70.2292 70.9658 78.0209 63.585C85.8125 56.2042 95.198 52.5161 106.177 52.5208C117.156 52.5208 126.601 56.2112 134.51 63.5921C142.42 70.9729 146.375 80.0325 146.375 90.7708C146.375 91.8333 146.052 92.6904 145.405 93.3421C144.758 93.9937 143.901 94.3172 142.833 94.3125C141.889 94.3125 141.063 93.989 140.354 93.3421C139.646 92.6951 139.292 91.8381 139.292 90.7708C139.292 81.9167 136.014 74.5099 129.46 68.5504C122.906 62.591 115.145 59.6089 106.177 59.6042C97.2049 59.6042 89.503 62.5862 83.0713 68.5504C76.6396 74.5146 73.4214 81.9214 73.4167 90.7708C73.4167 100.333 75.0695 108.451 78.375 115.123C81.6806 121.796 86.5209 128.494 92.8959 135.219C93.6042 135.927 93.9584 136.753 93.9584 137.698C93.9584 138.642 93.6042 139.469 92.8959 140.177C92.1875 140.885 91.3612 141.24 90.4167 141.24C89.4723 141.24 88.6459 140.885 87.9375 140.177ZM141.417 128.135C130.91 128.135 121.789 124.594 114.054 117.51C106.319 110.427 102.454 101.514 102.458 90.7708C102.458 89.8264 102.784 89 103.436 88.2917C104.088 87.5833 104.942 87.2292 106 87.2292C107.063 87.2292 107.92 87.5833 108.571 88.2917C109.223 89 109.546 89.8264 109.542 90.7708C109.542 99.625 112.729 106.885 119.104 112.552C125.479 118.219 132.917 121.052 141.417 121.052C142.125 121.052 143.129 120.993 144.427 120.875C145.726 120.757 147.083 120.58 148.5 120.344C149.563 120.108 150.479 120.256 151.248 120.79C152.018 121.324 152.519 122.119 152.75 123.177C152.986 124.122 152.809 124.948 152.219 125.656C151.629 126.365 150.861 126.837 149.917 127.073C147.792 127.663 145.934 127.989 144.342 128.05C142.751 128.112 141.776 128.14 141.417 128.135Z" fill="currentColor"/>
-                                    <path d="M3 72H209" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+                                    <path class="bio-scanner-line" d="M3 72H209" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
                                 </svg>'''),
                                 cls="relative mx-auto flex aspect-square size-32 rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5 items-center justify-center bg-white/[0.02]"
                             ),
@@ -1497,7 +1710,7 @@ def get():
                             ),
                             cls="pt-6"
                         ),
-                        cls="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
+                        cls="group relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
                     # Card 3: Performance em Milissegundos
@@ -1506,7 +1719,7 @@ def get():
                             Div(
                                 NotStr('''<svg class="w-full text-zinc-200" viewBox="0 0 386 123" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect width="386" height="123" rx="10" fill="#18181E"/>
-                                    <path d="M3 121.077C3 121.077 15.3041 93.6691 36.0195 87.756C56.7349 81.8429 66.6632 80.9723 66.6632 80.9723C66.6632 80.9723 80.0327 80.9723 91.4656 80.9723C102.898 80.9723 100.415 64.2824 108.556 64.2824C116.696 64.2824 117.693 92.1332 125.226 92.1332C132.759 92.1332 142.07 78.5115 153.591 80.9723C165.113 83.433 186.092 92.1332 193 92.1332C199.908 92.1332 205.274 64.2824 213.017 64.2824C220.76 64.2824 237.832 93.8946 243.39 92.1332C248.948 90.3718 257.923 60.5 265.284 60.5C271.145 60.5 283.204 87.7182 285.772 87.756C293.823 87.8746 299.2 73.0802 304.411 73.0802C311.283 73.0802 321.425 65.9506 333.552 64.2824C345.68 62.6141 346.91 82.4553 362.27 80.9723C377.629 79.4892 383 106.605 383 106.605" stroke="#FFFFFF" stroke-width="2.5"/>
+                                    <path class="perf-line-svg" d="M3 121.077C3 121.077 15.3041 93.6691 36.0195 87.756C56.7349 81.8429 66.6632 80.9723 66.6632 80.9723C66.6632 80.9723 80.0327 80.9723 91.4656 80.9723C102.898 80.9723 100.415 64.2824 108.556 64.2824C116.696 64.2824 117.693 92.1332 125.226 92.1332C132.759 92.1332 142.07 78.5115 153.591 80.9723C165.113 83.433 186.092 92.1332 193 92.1332C199.908 92.1332 205.274 64.2824 213.017 64.2824C220.76 64.2824 237.832 93.8946 243.39 92.1332C248.948 90.3718 257.923 60.5 265.284 60.5C271.145 60.5 283.204 87.7182 285.772 87.756C293.823 87.8746 299.2 73.0802 304.411 73.0802C311.283 73.0802 321.425 65.9506 333.552 64.2824C345.68 62.6141 346.91 82.4553 362.27 80.9723C377.629 79.4892 383 106.605 383 106.605" stroke="#FFFFFF" stroke-width="2.5"/>
                                 </svg>'''),
                                 cls="pt-2 px-1"
                             ),
@@ -1517,7 +1730,7 @@ def get():
                             ),
                             cls="pt-6"
                         ),
-                        cls="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
+                        cls="group relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
                     # Card 4: Pipelines & Telemetria
