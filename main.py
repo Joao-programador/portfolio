@@ -1732,7 +1732,7 @@ def render_portfolio(lang="pt"):
                 # CENTER PORTRAIT (Transparent Cutout Image)
                 Img(
                     src="/static/images/joao.png", 
-                    alt="João Barbosa - Data Architect & BI", 
+                    alt="João Barbosa | Data Architect & BI", 
                     width="432",
                     height="578",
                     fetchpriority="high",
