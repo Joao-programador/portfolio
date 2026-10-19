@@ -703,7 +703,7 @@ window.maturidade = () => ({{
 TECH_LOGOS = [
     {"name": "Python", "src": "https://cdn.simpleicons.org/python/FFFFFF"},
     {"name": "PostgreSQL", "src": "https://cdn.simpleicons.org/postgresql/FFFFFF"},
-    {"name": "Power BI", "src": "https://cdn.simpleicons.org/powerbi/FFFFFF"},
+    {"name": "Power BI", "src": "/static/powerbi.svg"},
     {"name": "Pandas", "src": "https://cdn.simpleicons.org/pandas/FFFFFF"},
     {"name": "Git & GitHub", "src": "https://cdn.simpleicons.org/git/FFFFFF"},
     {"name": "Leaflet GIS", "src": "https://cdn.simpleicons.org/leaflet/FFFFFF"},
