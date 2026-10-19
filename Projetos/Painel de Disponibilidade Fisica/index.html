@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PMSP • São Paulo Parcerias | Centro de Controle de Concessões e PPPs (DF%)</title>
+    <meta name="description" content="Painel Executivo de Fiscalização e Monitoramento de Disponibilidade Física (DF%) de Ativos Concedidos. Prefeitura de São Paulo e São Paulo Parcerias (SPP)." />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+
+    <!-- Tipografia Institucional Executiva: Geist (UI & Leitura) + Geist Mono (Telemetria & Dados) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS 3.4 Standalone CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["'Geist'", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+                        mono: ["'Geist Mono'", "monospace"]
+                    },
+                    colors: {
+                        spp: {
+                            orange: '#F08200',
+                            blue: '#004B6E',
+                            dark: '#083B56'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Chart.js 4.4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg-canvas: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --border-subtle: #E2E8F0;
+            --border-strong: #CBD5E1;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --spp-orange: #F08200;
+            --spp-blue: #004B6E;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
+            font-family: 'Geist', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Superfícies estruturais limpas */
+        .surface-panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Destaque focal para DF Geral */
+        .kpi-focal-emerald {
+            background-color: #FFFFFF;
+            border: 1px solid #A7F3D0;
+            box-shadow: 0 1px 3px 0 rgba(16, 185, 129, 0.08);
+        }
+
+        .kpi-focal-crimson {
+            background-color: #FFFFFF;
+            border: 1px solid #FECDD3;
+            box-shadow: 0 1px 3px 0 rgba(225, 29, 72, 0.08);
+        }
+
+        /* Navegação Executiva SP Parcerias (Padrão Oficial - Laranja SPP #F08200) */
+        .nav-item {
+            position: relative;
+            color: #475569;
+            transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: #0F172A;
+            background-color: #F1F5F9;
+        }
+
+        .nav-item-active {
+            color: #FFFFFF !important;
+            background-color: #F08200 !important;
+            font-weight: 600;
+            box-shadow: 0 4px 14px -2px rgba(240, 130, 0, 0.40);
+        }
+
+        .nav-item-active svg,
+        .nav-item-active .nav-icon,
+        .nav-item-active .nav-text,
+        .nav-item-active span {
+            color: #FFFFFF !important;
+            opacity: 1 !important;
+        }
+
+        /* Foco acessível WCAG 2.1 AAA */
+        button:focus-visible,
+        select:focus-visible,
+        input:focus-visible,
+        a:focus-visible {
+            outline: 2px solid #F08200 !important;
+            outline-offset: 1px !important;
+        }
+
+        /* Custom Scrollbar clean */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8FAFC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row antialiased selection:bg-orange-100 selection:text-orange-900 text-slate-800">
+
+    <!-- SIDEBAR EXECUTIVA MINIMALISTA (6 PÁGINAS OBRIGATÓRIAS) -->
+    <aside id="app-sidebar" aria-label="Navegação Principal do Painel" class="w-72 shrink-0 bg-white border-r border-slate-200 fixed lg:sticky top-0 left-0 h-screen z-50 flex flex-col justify-between transition-transform duration-200 ease-out -translate-x-full lg:translate-x-0">
+        <div class="flex flex-col flex-1 overflow-y-auto">
+            <!-- Header Institucional com Logo Oficial SP Parcerias -->
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="/static/logo-spp.png" alt="SP Parcerias" class="h-9 object-contain" />
+                    <div>
+                        <div class="text-[9px] font-mono font-semibold tracking-wider text-[#004B6E] uppercase leading-none">Prefeitura de SP</div>
+                        <div class="text-xs font-bold text-slate-800 tracking-tight mt-1 leading-snug">Concessões & PPPs</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telemetria & Meta Contratual -->
+            <div class="px-5 py-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between text-[11px] font-mono">
+                <div class="flex items-center gap-2 text-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
+                    <span class="font-medium">Telemetria Ativa</span>
+                </div>
+                <div class="text-slate-500 font-semibold">
+                    DF <span class="text-[#004B6E] font-bold">≥ 80%</span>
+                </div>
+            </div>
+
+            <!-- Navegação com 6 Módulos Contratuais -->
+            <nav class="p-3 space-y-1" aria-label="Visões do Centro de Controle">
+                <div class="px-3 pt-3 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+                    Visão Consolidada
+                </div>
+                <button type="button" data-nav-id="visao_geral" class="nav-item nav-item-active w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                        <span class="nav-text">Visão Geral (Município)</span>
+                    </span>
+                    <span class="text-[10px] font-mono">01</span>
+                </button>
+
+                <div class="px-3 pt-5 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+                    Lotes Regionais
+                </div>
+                <button type="button" data-nav-id="lote_1" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span class="nav-text">Lote 1: Noroeste/Centro</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">02</span>
+                </button>
+                <button type="button" data-nav-id="lote_2" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span class="nav-text">Lote 2: Sul/Sudoeste</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">03</span>
+                </button>
+                <button type="button" data-nav-id="lote_3" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span class="nav-text">Lote 3: Leste/Sudeste</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">04</span>
+                </button>
+
+                <div class="px-3 pt-5 pb-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+                    Fiscalização
+                </div>
+                <button type="button" data-nav-id="pendencias" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span class="nav-text">Gestão de Pendências</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">05</span>
+                </button>
+                <button type="button" data-nav-id="historico" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                        <span class="nav-text">Histórico (30 Dias)</span>
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">06</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Rodapé do Sistema / Caderno de Encargos -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="text-[10px] font-mono font-semibold text-[#004B6E] uppercase tracking-wider mb-2">Caderno de Encargos</div>
+            <div class="space-y-1.5 text-[11px] font-mono">
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                        Crítico (P1)
+                    </span>
+                    <span class="font-semibold text-slate-900">≥ 3 indisponíveis</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Alerta (P2)
+                    </span>
+                    <span class="font-semibold text-slate-900">1 ou 2 indisponíveis</span>
+                </div>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-200/60 text-[10px] text-slate-400 font-mono flex items-center justify-between">
+                <span>Painel Oficial SPP</span>
+                <span>v2.5.0</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+        <!-- CABEÇALHO INTEGRADO & BARRA DE FILTROS FLUIDA -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+            <!-- Barra Superior: Contexto Institucional + Ações -->
+            <div class="px-6 py-3.5 flex items-center justify-between border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <button id="btn-mobile-sidebar" type="button" aria-label="Abrir Menu Lateral" class="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="header-subtitle" class="text-[11px] font-mono font-bold tracking-wide text-[#004B6E] uppercase">
+                                PMSP • SÃO PAULO PARCERIAS | Centro de Controle de Concessões e PPPs
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-orange-50 text-[#F08200] border border-orange-200 font-semibold">
+                                Identidade SPP
+                            </span>
+                        </div>
+                        <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                            Disponibilidade Física (DF%) & Fiscalização Contratual
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button id="btn-export-csv" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium text-slate-700 bg-white border border-slate-300 hover:border-[#F08200] hover:text-[#F08200] transition-colors cursor-pointer shadow-xs">
+                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Exportar CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Filtros Compacta e Fluida (Padrão Enterprise) -->
+            <div class="px-6 py-2.5 bg-slate-50/70 border-t border-slate-50 flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 text-slate-400 text-xs font-mono shrink-0 mr-1">
+                    <svg class="w-3.5 h-3.5 text-[#004B6E]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    <span class="text-[11px] font-semibold text-[#004B6E] uppercase">Filtros:</span>
+                </div>
+
+                <!-- 1. Período -->
+                <div class="min-w-[170px] flex-1 sm:flex-initial">
+                    <select id="select-periodo" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-mono py-1.5 px-2.5 rounded-lg hover:border-slate-300 focus:border-[#F08200] transition-colors cursor-pointer">
+                        <option value="ultimo_dia">Último Dia (15/10/2026)</option>
+                        <option value="media_7d">Média 7 Dias</option>
+                        <option value="media_15d">Média 15 Dias</option>
+                        <option value="media_30d">Média 30 Dias</option>
+                    </select>
+                </div>
+
+                <!-- 2. Lote Regional -->
+                <div class="min-w-[150px] flex-1 sm:flex-initial">
+                    <select id="select-local" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-mono py-1.5 px-2.5 rounded-lg hover:border-slate-300 focus:border-[#F08200] transition-colors cursor-pointer">
+                        <option value="all">Todos os Lotes</option>
+                    </select>
+                </div>
+
+                <!-- 3. Complexo Concedido -->
+                <div class="min-w-[160px] flex-1 sm:flex-initial">
+                    <select id="select-bateria" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-mono py-1.5 px-2.5 rounded-lg hover:border-slate-300 focus:border-[#F08200] transition-colors cursor-pointer">
+                        <option value="all">Todos os Complexos</option>
+                    </select>
+                </div>
+
+                <!-- 4. Categoria Técnica -->
+                <div class="min-w-[150px] flex-1 sm:flex-initial">
+                    <select id="select-categoria" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-mono py-1.5 px-2.5 rounded-lg hover:border-slate-300 focus:border-[#F08200] transition-colors cursor-pointer">
+                        <option value="all">Todas as Categorias</option>
+                    </select>
+                </div>
+
+                <!-- 5. Prioridade Contratual -->
+                <div class="min-w-[150px] flex-1 sm:flex-initial">
+                    <select id="select-prioridade" class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-mono py-1.5 px-2.5 rounded-lg hover:border-slate-300 focus:border-[#F08200] transition-colors cursor-pointer">
+                        <option value="all">Todas as Prioridades</option>
+                        <option value="P1">P1 • Crítico (≥ 3 indisp.)</option>
+                        <option value="P2">P2 • Alerta (1 ou 2 indisp.)</option>
+                        <option value="Sem pendência">Sem pendência (100%)</option>
+                    </select>
+                </div>
+
+                <!-- Reset de Filtros -->
+                <div class="ml-auto flex items-center gap-2">
+                    <button id="btn-reset-filters" type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono text-slate-600 hover:text-[#BE123C] hover:bg-rose-50 transition-colors cursor-pointer">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>Limpar</span>
+                        <span id="active-filters-count" class="hidden px-1.5 py-0.2 rounded bg-slate-900 text-white text-[10px] font-mono font-bold">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTAINER DINÂMICO PRINCIPAL (CONTROLADO PELO APP.JS) -->
+        <main id="main-view-container" class="flex-1 p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
+            <!-- Renderizado dinamicamente via app.js -->
+        </main>
+
+        <!-- RODAPÉ EXECUTIVO SÓBRIO -->
+        <footer class="px-6 py-4 border-t border-slate-200 bg-white text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-[#004B6E]">Prefeitura do Município de São Paulo</span>
+                <span>•</span>
+                <span class="font-semibold text-[#F08200]">São Paulo Parcerias (SPP)</span>
+            </div>
+            <div class="text-slate-400 text-[11px]">
+                Meta DF: 80,0% | Gatilho P1: ≥ 3 Indisponibilidades Consecutivas
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL DE INSPEÇÃO TÉCNICA / FICHA DE FISCALIZAÇÃO -->
+    <div id="ticket-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 transition-all">
+        <div class="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-xl relative text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            <div id="ticket-modal-body"></div>
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] font-mono text-slate-400">PMSP • Fiscalização Concessionária</span>
+                <button id="btn-close-modal" type="button" class="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-[#004B6E] hover:bg-[#083B56] text-white transition-colors cursor-pointer shadow-xs">
+                    Fechar Inspeção (ESC)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dados e Motor SPA -->
+    <script src="mock_data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -43,7 +43,7 @@ window.featureCarousel = function() {
         isModalOpen: false,
         selectedFeature: null,
         iframeLoaded: false,
-        len: 3,
+        len: 4,
         progress: 0,
         duration: 5000,
         rafId: null,
@@ -51,6 +51,11 @@ window.featureCarousel = function() {
         tiltX: 0,
         tiltY: 0,
         features: [
+            {
+                label: "Fiscalização de Concessões (DF%)",
+                tag: "GovTech & PPPs • SP Parcerias",
+                iframe_src: "/Projetos/Painel de Disponibilidade Fisica/index.html"
+            },
             {
                 label: "Análise de Prazos & SLAs",
                 tag: "Gestão Estratégica",
@@ -128,7 +133,8 @@ window.featureCarousel = function() {
             const diff = (index - this.currentIndex + this.len) % this.len;
             if (diff === 0) return 'active';
             if (diff === 1) return 'next';
-            return 'prev';
+            if (diff === this.len - 1) return 'prev';
+            return 'hidden';
         },
         getCardStyle(index) {
             const status = this.getCardStatus(index);
@@ -138,7 +144,10 @@ window.featureCarousel = function() {
             if (status === 'next') {
                 return "position: absolute; inset: 0; transform: perspective(1200px) translateY(22px) translateX(28px) scale(0.92); opacity: 0.35; z-index: 20; pointer-events: none; filter: blur(1px) brightness(0.6);";
             }
-            return "position: absolute; inset: 0; transform: perspective(1200px) translateY(-22px) translateX(-28px) scale(0.88); opacity: 0.18; z-index: 10; pointer-events: none; filter: blur(2px) brightness(0.4);";
+            if (status === 'prev') {
+                return "position: absolute; inset: 0; transform: perspective(1200px) translateY(-22px) translateX(-28px) scale(0.88); opacity: 0.18; z-index: 10; pointer-events: none; filter: blur(2px) brightness(0.4);";
+            }
+            return "position: absolute; inset: 0; transform: perspective(1200px) scale(0.82); opacity: 0; z-index: 5; pointer-events: none;";
         },
         openModal(index) {
             this.iframeLoaded = false;
@@ -258,6 +267,15 @@ if projetos_dir.exists():
 
 FEATURES = [
   {
+      "id": "disponibilidade",
+      "label": "Fiscalização de Concessões (DF%)",
+      "tag": "GovTech & PPPs • SP Parcerias",
+      "icon": '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>',
+      "image": "/static/disponibilidade-fisica-print.png",
+      "iframe_src": "/Projetos/Painel de Disponibilidade Fisica/index.html",
+      "description": "Centro de Controle de Concessões e PPPs (PMSP / SP Parcerias): monitoramento da Disponibilidade Física (DF%) em 21 complexos concedidos, fiscalização contratual e série temporal de 30 dias."
+  },
+  {
       "id": "prazos",
       "label": "Análise de Prazos & SLAs",
       "tag": "Gestão Estratégica",
@@ -289,6 +307,7 @@ FEATURES = [
 def FeatureCarousel():
     # Configuração complementar visual por projeto (Backlight + URL de Cockpit)
     meta_styles = [
+        {"glow": "rgba(16, 185, 129, 0.18)", "accent": "text-emerald-400", "bar": "bg-emerald-400", "path": "cco.spparcerias.gov.br/df-concessoes"},
         {"glow": "rgba(59, 130, 246, 0.16)", "accent": "text-blue-400", "bar": "bg-blue-400", "path": "analytics.spp.gov/sla-monitor"},
         {"glow": "rgba(52, 211, 153, 0.16)", "accent": "text-emerald-400", "bar": "bg-emerald-400", "path": "gis.spp.gov/sp-mobilidade"},
         {"glow": "rgba(245, 158, 11, 0.16)", "accent": "text-amber-400", "bar": "bg-amber-400", "path": "cockpit.spp.gov/sgo-executivo"},
@@ -1461,6 +1480,111 @@ def Diagnostico():
         cls="py-28 px-6 bg-[#0E0E12] relative z-10 border-t border-white/10 gs-scroll scroll-mt-20",
     )
 
+def ExecutiveCTASection():
+    return Section(
+        Div(
+            # Card Monumental com Spotlight Interativo no Mouse
+            Div(
+                # Efeito Spotlight que segue o mouse (Alpine.js)
+                Div(
+                    cls="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 group-hover/cta:opacity-100 transition-opacity duration-500 z-0",
+                    **{
+                        ":style": "`background: radial-gradient(650px circle at ${mx}px ${my}px, rgba(52, 211, 153, 0.12), rgba(255, 255, 255, 0.04) 40%, transparent 80%);`"
+                    }
+                ),
+
+                # Malha Arquitetônica de Fundo + Glow Fixo Central
+                Div(cls="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_40%,transparent_100%)] z-0"),
+                Div(cls="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[520px] h-[240px] bg-emerald-500/10 blur-[110px] rounded-full z-0"),
+
+                # Conteúdo Principal Centralizado
+                Div(
+                    # Badge de Status Operacional
+                    Div(
+                        Span(cls="size-2 rounded-full bg-emerald-400 animate-ping"),
+                        Span(cls="size-2 rounded-full bg-emerald-400 -ml-2"),
+                        Span("DISPONÍVEL PARA PROJETOS ESTRATÉGICOS & POSIÇÕES EXECUTIVAS", cls="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-emerald-400"),
+                        cls="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8"
+                    ),
+
+                    # Headline Monumental
+                    H2(
+                        "VAMOS TRANSFORMAR DADOS",
+                        Br(),
+                        Span("em Decisões de Alto Impacto?", cls="font-playfair italic font-normal text-zinc-300"),
+                        cls="text-4xl sm:text-6xl lg:text-7xl font-oswald uppercase tracking-tight text-white leading-[1.05] mb-6 max-w-4xl mx-auto"
+                    ),
+
+                    P(
+                        "Seja para estruturar pipelines auditáveis em Python e SQL, desenhar cockpits executivos em Power BI ou elevar a governança analítica da sua operação em São Paulo ou remotamente.",
+                        cls="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed"
+                    ),
+
+                    # Linha de Botões de Ação (Iniciar Conversa + Copiar E-mail 1-Click)
+                    Div(
+                        # Botão Primário (Mailto Direto)
+                        A(
+                            Span("Iniciar Conversa Agora"),
+                            NotStr('<svg class="w-4 h-4 ml-2.5 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>'),
+                            href=f"mailto:{EMAIL_CONTACT}?subject=Contato%20Estrat%C3%A9gico%20via%20Portf%C3%B3lio%20-%20Jo%C3%A3o%20Barbosa",
+                            cls="w-full sm:w-auto inline-flex items-center justify-center bg-white text-black font-semibold text-sm sm:text-base px-8 py-4 rounded-2xl hover:bg-zinc-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] group/btn"
+                        ),
+
+                        # Botão Secundário Inteligente (Copiar E-mail sem abrir cliente de email)
+                        Button(
+                            NotStr('<svg x-show="!copied" class="w-4 h-4 mr-2.5 text-zinc-400 group-hover/copy:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'),
+                            NotStr('<svg x-show="copied" x-cloak class="w-4 h-4 mr-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'),
+                            Span(**{"x-text": f"copied ? 'E-mail Copiado: {EMAIL_CONTACT}' : 'Copiar E-mail Direto'"}),
+                            type="button",
+                            cls="w-full sm:w-auto inline-flex items-center justify-center bg-[#181820] hover:bg-[#22222C] text-zinc-200 hover:text-white font-mono text-xs sm:text-sm px-7 py-4 rounded-2xl border border-white/15 hover:border-white/30 transition-all cursor-pointer group/copy",
+                            **{
+                                "@click": f"navigator.clipboard.writeText('{EMAIL_CONTACT}'); copied = true; setTimeout(() => copied = false, 3000)"
+                            }
+                        ),
+                        cls="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+                    ),
+
+                    # Barra Inferior de Conexão Rápida e Credenciais
+                    Div(
+                        A(
+                            Span("LINKEDIN EXECUTIVO", cls="text-xs font-mono text-zinc-300 group-hover/lk:text-white transition-colors"),
+                            NotStr('<svg class="w-3.5 h-3.5 text-zinc-500 group-hover/lk:text-emerald-400 group-hover/lk:translate-x-0.5 group-hover/lk:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
+                            href=LINKEDIN_URL,
+                            target="_blank",
+                            rel="noopener noreferrer",
+                            cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all group/lk"
+                        ),
+                        A(
+                            Span("REPOSITÓRIO GITHUB", cls="text-xs font-mono text-zinc-300 group-hover/gh:text-white transition-colors"),
+                            NotStr('<svg class="w-3.5 h-3.5 text-zinc-500 group-hover/gh:text-emerald-400 group-hover/gh:translate-x-0.5 group-hover/gh:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
+                            href=GITHUB_URL,
+                            target="_blank",
+                            rel="noopener noreferrer",
+                            cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all group/gh"
+                        ),
+                        Div(
+                            Span("BASE:", cls="text-[11px] font-mono text-zinc-500"),
+                            Span("SÃO PAULO, SP • BRASIL", cls="text-xs font-mono text-zinc-300"),
+                            cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5"
+                        ),
+                        cls="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-white/10 max-w-2xl mx-auto"
+                    ),
+
+                    cls="relative z-10 text-center py-16 sm:py-20 px-6 sm:px-12"
+                ),
+
+                cls="relative overflow-hidden rounded-[2.5rem] bg-[#101015] border border-white/15 shadow-[0_30px_90px_rgba(0,0,0,0.85)] group/cta",
+                **{
+                    "x-data": "{ mx: 500, my: 250, copied: false }",
+                    "@mousemove": "const r = $el.getBoundingClientRect(); mx = $event.clientX - r.left; my = $event.clientY - r.top"
+                }
+            ),
+            cls="max-w-7xl mx-auto px-6"
+        ),
+        id="contact",
+        cls="py-20 sm:py-28 bg-[#0A0A0C] border-t border-white/10 relative z-20 gs-scroll"
+    )
+
 @rt("/")
 def get():
     return (
@@ -1819,6 +1943,9 @@ def get():
 
         # --- DIAGNÓSTICO DE MATURIDADE EM DADOS ---
         Diagnostico(),
+
+        # --- EXECUTIVE CLOSING CTA ---
+        ExecutiveCTASection(),
         
         # --- FOOTER (Executive Monolith) ---
         Footer(
