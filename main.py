@@ -6,6 +6,7 @@ import json
 import urllib.parse
 from pathlib import Path
 import os
+from i18n import get_content, get_diagnostico_data, CONTENT
 
 # --- DADOS REAIS DE CONTATO ---
 LINKEDIN_URL = "https://www.linkedin.com/in/joaobarbosamf"
@@ -34,44 +35,31 @@ _app, rt = fast_app(
         Script(src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js", defer=True),
         Script(src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js", defer=True),
 
-        # Script do Carrossel Executivo 2.0 (Accordion + Progress + 3D Tilt + Modal Flutuante)
+        # Dados Bilíngues dos Projetos para o Carrossel
+        Script(NotStr(f"""
+window.FEATURES_PT = {json.dumps(CONTENT['pt']['work']['features'], ensure_ascii=False)};
+window.FEATURES_EN = {json.dumps(CONTENT['en']['work']['features'], ensure_ascii=False)};
+""")),
+
+        # Script do Carrossel Executivo 2.0 Bilíngue (Accordion + Progress + 3D Tilt + Modal Flutuante)
         Script(NotStr("""
 window.featureCarousel = function() {
+    const isEn = window.location.pathname.startsWith('/en');
+    const feats = isEn ? window.FEATURES_EN : window.FEATURES_PT;
     return {
         currentIndex: 0,
         isPaused: false,
         isModalOpen: false,
         selectedFeature: null,
         iframeLoaded: false,
-        len: 4,
+        len: feats.length,
         progress: 0,
         duration: 5000,
         rafId: null,
         lastTick: null,
         tiltX: 0,
         tiltY: 0,
-        features: [
-            {
-                label: "Fiscalização de Concessões (DF%)",
-                tag: "GovTech & PPPs • SP Parcerias",
-                iframe_src: "/Projetos/Painel de Disponibilidade Fisica/index.html"
-            },
-            {
-                label: "Análise de Prazos & SLAs",
-                tag: "Gestão Estratégica",
-                iframe_src: "/Projetos/Análise de Prazos - Ficticio.html"
-            },
-            {
-                label: "Mapeamento Geoespacial SP",
-                tag: "GIS & Mobilidade",
-                iframe_src: "/Projetos/Mapa de Estacionamentos/index.html"
-            },
-            {
-                label: "Gestão Operacional (SGO)",
-                tag: "Eficiência Estratégica",
-                iframe_src: "/Projetos/Painel de Performance Operacional/index.html"
-            }
-        ],
+        features: feats,
         get currentModalFeature() {
             return this.selectedFeature !== null ? this.features[this.selectedFeature] : null;
         },
@@ -304,7 +292,11 @@ FEATURES = [
   }
 ]
 
-def FeatureCarousel():
+def FeatureCarousel(lang="pt"):
+    t = get_content(lang)
+    work = t["work"]
+    features = work["features"]
+
     # Configuração complementar visual por projeto (Backlight + URL de Cockpit)
     meta_styles = [
         {"glow": "rgba(16, 185, 129, 0.18)", "accent": "text-emerald-400", "bar": "bg-emerald-400", "path": "cco.spparcerias.gov.br/df-concessoes"},
@@ -314,7 +306,8 @@ def FeatureCarousel():
     ]
 
     left_accordion_items = []
-    for i, f in enumerate(FEATURES):
+    for i, f_trans in enumerate(features):
+        f = {**FEATURES[i % len(FEATURES)], **f_trans}
         m = meta_styles[i % len(meta_styles)]
         left_accordion_items.append(
             Div(
@@ -339,7 +332,7 @@ def FeatureCarousel():
                         ),
                         # Indicador lateral de status
                         Span(
-                            "ATIVO",
+                            "ACTIVE" if lang == "en" else "ATIVO",
                             **{"x-show": f"currentIndex === {i}"},
                             cls="hidden sm:inline-block text-[9px] font-mono font-semibold uppercase tracking-widest px-2 py-0.5 rounded bg-white/10 text-zinc-200 border border-white/10"
                         ),
@@ -349,7 +342,7 @@ def FeatureCarousel():
                     cls="w-full text-left p-4 md:p-5 cursor-pointer focus:outline-none group",
                     **{
                         "@click": f"select({i})",
-                        "aria-label": f"Selecionar projeto: {f['label']}"
+                        "aria-label": f"{work['btn_explore']}: {f['label']}"
                     }
                 ),
 
@@ -358,13 +351,13 @@ def FeatureCarousel():
                     P(f['description'], cls="text-xs md:text-sm text-zinc-300 leading-relaxed mb-4"),
                     Div(
                         Button(
-                            Span("Explorar Painel Interativo"),
+                            Span(work["btn_explore"]),
                             NotStr('<svg class="w-3.5 h-3.5 ml-1.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>'),
                             type="button",
                             cls="inline-flex items-center text-xs font-semibold text-black bg-white hover:bg-zinc-200 px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer group/btn",
                             **{"@click.stop": f"openModal({i})"}
                         ),
-                        Span("Dados fictícios auditáveis", cls="text-[10px] font-mono text-zinc-500"),
+                        Span(work["auditable_hint"], cls="text-[10px] font-mono text-zinc-500"),
                         cls="flex items-center justify-between gap-3 pt-1"
                     ),
                     cls="px-4 md:px-5 pb-5 pt-0 border-t border-white/5 mt-1",
@@ -414,14 +407,14 @@ def FeatureCarousel():
                             **{"x-text": "currentModalFeature ? currentModalFeature.label : ''"}
                         ),
                         Span(
-                            "Dados fictícios para demonstração",
+                            work["modal_hint"],
                             cls="ml-3 hidden sm:inline-block text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded bg-white/5 border border-white/10 text-zinc-400"
                         ),
                         cls="flex items-center"
                     ),
                     Div(
                         A(
-                            Span("Abrir em Nova Aba"),
+                            Span(work["modal_new_tab"]),
                             NotStr('<svg class="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
                             target="_blank",
                             rel="noopener noreferrer",
@@ -431,7 +424,7 @@ def FeatureCarousel():
                         Button(
                             NotStr('<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>'),
                             cls="p-1.5 bg-white/10 hover:bg-white hover:text-black text-white rounded-lg border border-white/15 transition-colors cursor-pointer",
-                            aria_label="Fechar demonstração",
+                            aria_label=work["modal_close"],
                             **{"@click.stop": "closeModal()"}
                         ),
                         cls="flex items-center"
@@ -444,7 +437,7 @@ def FeatureCarousel():
                     Div(
                         Div(
                             Span(cls="size-3 rounded-full bg-emerald-400 animate-ping"),
-                            Span("Carregando painel analítico...", cls="text-xs font-mono text-zinc-300"),
+                            Span(work["modal_loading"], cls="text-xs font-mono text-zinc-300"),
                             cls="flex items-center gap-3 bg-[#121217] px-5 py-3 rounded-xl border border-white/10 shadow-xl"
                         ),
                         cls="absolute inset-0 flex items-center justify-center bg-[#0A0A0C] z-20 pointer-events-none",
@@ -479,7 +472,8 @@ def FeatureCarousel():
     )
 
     right_cards = []
-    for i, f in enumerate(FEATURES):
+    for i, f_trans in enumerate(features):
+        f = {**FEATURES[i % len(FEATURES)], **f_trans}
         m = meta_styles[i % len(meta_styles)]
 
         # 1. Barra Superior de Janela (Window Chrome para o Preview)
@@ -500,7 +494,7 @@ def FeatureCarousel():
             # Badge de Demonstração Interativa alojada na barra superior
             Div(
                 Span(cls="size-1.5 rounded-full bg-emerald-400 animate-pulse"),
-                Span("Demo Interativa", cls="text-[10px] font-mono font-medium text-zinc-200 tracking-wide"),
+                Span(work["badge_interactive"], cls="text-[10px] font-mono font-medium text-zinc-200 tracking-wide"),
                 cls="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full"
             ),
             cls="h-9 px-4 bg-[#14141B] border-b border-white/10 flex items-center justify-between shrink-0 z-[35]"
@@ -521,7 +515,7 @@ def FeatureCarousel():
         hover_cta_overlay = Div(
             Div(
                 NotStr('<svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>'),
-                Span("Clique para Interagir no Painel ao Vivo", cls="text-xs font-semibold text-white tracking-tight"),
+                Span(work["interactive_hint"], cls="text-xs font-semibold text-white tracking-tight"),
                 cls="flex items-center gap-2 bg-[#0A0A0E]/90 backdrop-blur-md border border-white/20 px-4 py-2.5 rounded-full shadow-2xl transform translate-y-2 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300"
             ),
             cls="absolute inset-0 z-[40] flex items-center justify-center bg-black/0 group-hover/card:bg-black/25 transition-colors duration-300 pointer-events-none",
@@ -539,7 +533,7 @@ def FeatureCarousel():
                 # Botão invisível de captura de clique acessível via teclado
                 Button(
                     cls="absolute inset-0 z-[50] cursor-pointer opacity-0 w-full h-full border-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white rounded-2xl outline-none",
-                    aria_label=f"Abrir demonstração interativa: {f['label']}",
+                    aria_label=f"{work['btn_explore']}: {f['label']}",
                     **{
                         "@click": f"if ({i} === currentIndex) openModal({i})"
                     }
@@ -559,7 +553,7 @@ def FeatureCarousel():
             # COLUNA ESQUERDA: Accordion Inteligente + Controles
             Div(
                 Div(
-                    Span("SELECIONE O ESTUDO DE CASO", cls="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 block mb-4"),
+                    Span(work["select_case"], cls="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 block mb-4"),
                     Div(*left_accordion_items, cls="space-y-3"),
                     cls="w-full"
                 ),
@@ -570,7 +564,7 @@ def FeatureCarousel():
                             NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>'),
                             type="button",
                             cls="w-9 h-9 rounded-xl bg-[#14141B] border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 flex items-center justify-center transition-all cursor-pointer",
-                            **{"@click": "prev()", "aria-label": "Projeto anterior"}
+                            **{"@click": "prev()", "aria-label": "Previous project" if lang == "en" else "Projeto anterior"}
                         ),
                         Span(
                             cls="text-xs font-mono text-zinc-400 px-3",
@@ -580,12 +574,12 @@ def FeatureCarousel():
                             NotStr('<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'),
                             type="button",
                             cls="w-9 h-9 rounded-xl bg-[#14141B] border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 flex items-center justify-center transition-all cursor-pointer",
-                            **{"@click": "next()", "aria-label": "Próximo projeto"}
+                            **{"@click": "next()", "aria-label": "Next project" if lang == "en" else "Próximo projeto"}
                         ),
                         cls="flex items-center gap-1"
                     ),
                     Span(
-                        **{"x-text": "isPaused ? '⏸ PAUSADO' : '▶ AUTO-CICLO'"},
+                        **{"x-text": f"isPaused ? ('{('⏸ PAUSED' if lang == 'en' else '⏸ PAUSADO')}') : ('{('▶ AUTO-CYCLE' if lang == 'en' else '▶ AUTO-CICLO')}')"},
                         cls="text-[10px] font-mono tracking-widest text-zinc-500 uppercase"
                     ),
                     cls="w-full flex items-center justify-between pt-6 mt-6 border-t border-white/10"
@@ -674,8 +668,14 @@ window.maturidade = () => ({{
   get pontos() {{ return this.respostas.reduce((a, b) => a + b, 0); }},
   get nivel() {{ return this.dados.niveis.find(n => this.pontos <= n.max) || this.dados.niveis[2]; }},
   get mailto() {{
-    const corpo = `Olá João,\\n\\nRealizei o diagnóstico de maturidade no seu portfólio:\\n- Pontuação: ${{this.pontos}} / ${{this.dados.max}}\\n- Nível Diagnosticado: ${{this.nivel.titulo}}\\n\\nGostaria de conversar sobre estratégias e próximos passos analíticos para nossa operação.`;
-    return 'mailto:{EMAIL_CONTACT}?subject=' + encodeURIComponent('Diagnóstico de Maturidade em Dados: ' + this.nivel.titulo)
+    const isEn = window.location.pathname.startsWith('/en');
+    const assunto = isEn 
+      ? 'Data Maturity Assessment: ' + this.nivel.titulo
+      : 'Diagnóstico de Maturidade em Dados: ' + this.nivel.titulo;
+    const corpo = isEn
+      ? `Hello João,\\n\\nI completed the data maturity assessment on your portfolio:\\n- Score: ${{this.pontos}} / ${{this.dados.max}}\\n- Diagnosed Stage: ${{this.nivel.titulo}}\\n\\nI would like to discuss analytics strategy and next steps for our operation.`
+      : `Olá João,\\n\\nRealizei o diagnóstico de maturidade no seu portfólio:\\n- Pontuação: ${{this.pontos}} / ${{this.dados.max}}\\n- Nível Diagnosticado: ${{this.nivel.titulo}}\\n\\nGostaria de conversar sobre estratégias e próximos passos analíticos para nossa operação.`;
+    return 'mailto:{EMAIL_CONTACT}?subject=' + encodeURIComponent(assunto)
          + '&body=' + encodeURIComponent(corpo);
   }},
   responder(p) {{
@@ -735,27 +735,42 @@ def TechMarquee():
         cls="py-8 bg-[#070709] border-y border-white/10 relative z-20"
     )
 
-def AboutSection():
+def AboutSection(lang="pt"):
+    t = get_content(lang)
+    about = t["about"]
+    pillars = about["pillars"]
+
+    pillar_cards = []
+    for p in pillars:
+        pillar_cards.append(
+            Div(
+                Span(p["num"], cls="text-xs font-mono font-bold text-zinc-400 block mb-1.5"),
+                H5(p["title"], cls="text-base font-bold text-white mb-1"),
+                P(p["desc"], cls="text-xs text-zinc-400 leading-relaxed"),
+                cls="p-5 rounded-2xl bg-[#141419] border border-white/10 hover:border-white/30 transition-colors"
+            )
+        )
+
     return Section(
         Div(
             Div(
                 # Coluna Esquerda
                 Div(
-                    Span("TRAJETÓRIA & PROPÓSITO", cls="text-[11px] font-mono font-semibold tracking-[0.25em] text-zinc-400 uppercase block mb-3"),
-                    H2("DADOS A SERVIÇO DE DECISÕES ESTRATÉGICAS NA MAIOR METRÓPOLE DA AMÉRICA LATINA.", 
+                    Span(about["tag"], cls="text-[11px] font-mono font-semibold tracking-[0.25em] text-zinc-400 uppercase block mb-3"),
+                    H2(about["h2"], 
                        cls="text-3xl md:text-4xl lg:text-[40px] font-oswald uppercase tracking-tight text-white leading-[1.18] mb-6"),
-                    P("A ponte essencial entre a engenharia analítica e a tomada de decisão executiva.", 
+                    P(about["lead"], 
                        cls="font-playfair italic text-xl md:text-2xl text-zinc-300 leading-snug mb-8"),
                     
                     # Card Institucional SPP
                     Div(
                         Div(
                             Span(cls="size-2 rounded-full bg-emerald-400"),
-                            Span("ATUAÇÃO INSTITUCIONAL", cls="text-[10px] font-mono font-semibold tracking-widest text-emerald-400 uppercase"),
+                            Span(about["spp_badge"], cls="text-[10px] font-mono font-semibold tracking-widest text-emerald-400 uppercase"),
                             cls="flex items-center gap-2 mb-2"
                         ),
-                        H4("São Paulo Parcerias (SPP)", cls="text-lg font-bold text-white"),
-                        P("Estruturação analítica, auditoria e modelagem de dados para desestatizações, concessões e projetos estratégicos do município de São Paulo.", 
+                        H4(about["spp_title"], cls="text-lg font-bold text-white"),
+                        P(about["spp_desc"], 
                           cls="text-xs text-zinc-400 mt-1.5 leading-relaxed"),
                         cls="p-6 rounded-2xl bg-[#141419] border border-white/10 shadow-lg mt-auto"
                     ),
@@ -765,36 +780,16 @@ def AboutSection():
                 # Coluna Direita
                 Div(
                     Div(
-                        P("Com atuação direta na modelagem e auditoria de dados para desestatizações e parcerias públicas, meu foco é transformar bases volumosas e dispersas em ecossistemas de decisão auditáveis, claros e de alta adoção.",
+                        P(about["p1"],
                           cls="text-base md:text-lg text-zinc-200 leading-relaxed mb-6 font-medium"),
-                        P("Inteligência de dados só tem valor real quando reduz a incerteza de diretores e gestores em segundos, unindo a robustez do código em Python e modelagem relacional a interfaces executivas de máxima clareza cognitiva.",
+                        P(about["p2"],
                           cls="text-base md:text-lg text-zinc-400 leading-relaxed mb-10"),
                         cls="mb-4"
                     ),
                     
                     # 3 Microcards de Pilares
                     Div(
-                        Div(
-                            Span("01", cls="text-xs font-mono font-bold text-zinc-400 block mb-1.5"),
-                            H5("Rigor & Auditoria", cls="text-base font-bold text-white mb-1"),
-                            P("Bases validadas e estruturadas para atender aos mais altos padrões de compliance e órgãos de controle.", 
-                              cls="text-xs text-zinc-400 leading-relaxed"),
-                            cls="p-5 rounded-2xl bg-[#141419] border border-white/10 hover:border-white/30 transition-colors"
-                        ),
-                        Div(
-                            Span("02", cls="text-xs font-mono font-bold text-zinc-400 block mb-1.5"),
-                            H5("Automação de Ponta", cls="text-base font-bold text-white mb-1"),
-                            P("Pipelines em Python que eliminam retrabalho manual e aceleram o fechamento de análises complexas.", 
-                              cls="text-xs text-zinc-400 leading-relaxed"),
-                            cls="p-5 rounded-2xl bg-[#141419] border border-white/10 hover:border-white/30 transition-colors"
-                        ),
-                        Div(
-                            Span("03", cls="text-xs font-mono font-bold text-zinc-400 block mb-1.5"),
-                            H5("Design Cognitivo", cls="text-base font-bold text-white mb-1"),
-                            P("Painéis executivos desenhados para que decisores encontrem respostas críticas com máxima agilidade.", 
-                              cls="text-xs text-zinc-400 leading-relaxed"),
-                            cls="p-5 rounded-2xl bg-[#141419] border border-white/10 hover:border-white/30 transition-colors"
-                        ),
+                        *pillar_cards,
                         cls="grid grid-cols-1 sm:grid-cols-3 gap-4"
                     ),
                     cls="lg:col-span-7 flex flex-col justify-between h-full gs-scroll"
@@ -807,7 +802,10 @@ def AboutSection():
         cls="py-24 md:py-28 bg-[#0A0A0C] border-b border-white/10 relative z-20 scroll-mt-20"
     )
 
-def DataJourney3DSection():
+def DataJourney3DSection(lang="pt"):
+    t = get_content(lang)
+    phil = t["philosophy"]
+
     three_js_script = """
     window.addEventListener('DOMContentLoaded', () => {
         if (typeof THREE === 'undefined' || typeof gsap === 'undefined') return;
@@ -820,6 +818,7 @@ def DataJourney3DSection():
         const ttMeta = document.getElementById('tt-node-meta');
         if (!container) return;
 
+        const isEn = window.location.pathname.startsWith('/en');
         const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         // 1. CENA, CÂMERA E RENDERER (Dark Mode #0A0A0C)
@@ -898,7 +897,10 @@ def DataJourney3DSection():
         const dummy = new THREE.Object3D();
         let currentMode = 'olap'; // 'olap' | 'star' | 'gauss'
 
-        const kpiLabels = [
+        const kpiLabels = isEn ? [
+            "PUBLIC CONCESSION SLA", "FLOW AUDIT", "CAPEX/OPEX MODEL",
+            "SP MOBILITY INDEX", "CONCESSION FEE REVENUE", "SGO EFFICIENCY"
+        ] : [
             "SLA CONCESSÃO PÚBLICA", "AUDITORIA DE FLUXO", "MODELO CAPEX/OPEX",
             "ÍNDICE DE MOBILIDADE SP", "RECEITA DE OUTORGA", "EFICIÊNCIA SGO"
         ];
@@ -972,7 +974,6 @@ def DataJourney3DSection():
                 }
             } else if (mode === 'star') {
                 // MODO 2: Star Schema Relacional (1 Tabela Fato Central + 6 Tabelas Dimensão Satélites)
-                // 180 blocos no núcleo central (Fato) + 50 blocos em cada um dos 6 satélites (Dimensões)
                 const factCols = 5, factRows = 5;
                 for (let i = 0; i < 180; i++) {
                     const c = i % factCols;
@@ -1108,14 +1109,26 @@ def DataJourney3DSection():
                         const p = self.progress;
                         if (!stageBadge || !stageMetric) return;
                         if (p < 0.3) {
-                            stageBadge.textContent = "01 // BASES DISPERSAS & CAOS OPERACIONAL";
-                            stageMetric.textContent = `Entropia: ${(98.4 - p * 110).toFixed(1)}% • Planilhas & Sistemas Isolados`;
+                            stageBadge.textContent = isEn 
+                                ? "01 // DISPERSED DATA & OPERATIONAL CHAOS" 
+                                : "01 // BASES DISPERSAS & CAOS OPERACIONAL";
+                            stageMetric.textContent = isEn 
+                                ? `Entropy: ${(98.4 - p * 110).toFixed(1)}% • Spreadsheets & Isolated Silos`
+                                : `Entropia: ${(98.4 - p * 110).toFixed(1)}% • Planilhas & Sistemas Isolados`;
                         } else if (p < 0.72) {
-                            stageBadge.textContent = "02 // PIPELINE PYTHON & STAR SCHEMA SQL";
-                            stageMetric.textContent = `Modelagem & Validação: ${Math.min(99, Math.floor(p * 130))}% • Tratamento de Anomalias`;
+                            stageBadge.textContent = isEn 
+                                ? "02 // PYTHON PIPELINES & SQL STAR SCHEMA" 
+                                : "02 // PIPELINE PYTHON & STAR SCHEMA SQL";
+                            stageMetric.textContent = isEn 
+                                ? `Modeling & Validation: ${Math.min(99, Math.floor(p * 130))}% • Anomaly Resolution`
+                                : `Modelagem & Validação: ${Math.min(99, Math.floor(p * 130))}% • Tratamento de Anomalias`;
                         } else {
-                            stageBadge.textContent = "03 // COCKPIT EXECUTIVO C-LEVEL";
-                            stageMetric.textContent = "Consistência Auditável • Passe o mouse nos blocos para inspecionar";
+                            stageBadge.textContent = isEn 
+                                ? "03 // C-LEVEL EXECUTIVE COCKPIT" 
+                                : "03 // COCKPIT EXECUTIVO C-LEVEL";
+                            stageMetric.textContent = isEn 
+                                ? "Auditable Consistency • Hover blocks to inspect"
+                                : "Consistência Auditável • Passe o mouse nos blocos para inspecionar";
                         }
                     }
                 }
@@ -1169,7 +1182,6 @@ def DataJourney3DSection():
             const t = state.progress;
             const chaosFactor = 1 - t;
 
-            // Checar interseção de Raycaster quando os dados estão visíveis
             if (mouseNDC.x !== -999 && t > 0.45) {
                 raycaster.setFromCamera(mouseNDC, camera);
                 const hits = raycaster.intersectObject(instancedData);
@@ -1179,7 +1191,9 @@ def DataJourney3DSection():
                     if (tooltip && ttId && ttKpi && ttMeta) {
                         ttId.textContent = meta.id;
                         ttKpi.textContent = meta.kpi;
-                        ttMeta.textContent = `CONFORMIDADE: ${meta.val} • QUERY: ${meta.lat}`;
+                        ttMeta.textContent = isEn 
+                            ? `COMPLIANCE: ${meta.val} • QUERY: ${meta.lat}`
+                            : `CONFORMIDADE: ${meta.val} • QUERY: ${meta.lat}`;
                         tooltip.style.opacity = '1';
                     }
                 } else {
@@ -1199,7 +1213,6 @@ def DataJourney3DSection():
                 const fy = Math.cos(elapsed * c.speed + c.phase) * 0.45 * chaosFactor;
                 const fz = Math.sin(elapsed * 0.7 * c.speed + c.phase) * 0.45 * chaosFactor;
 
-                // Elevação tátil se o bloco estiver sob o cursor do mouse
                 const hoverLift = (i === hoveredInstance) ? 0.32 : 0;
                 const hoverScale = (i === hoveredInstance) ? 1.16 : 1.0;
 
@@ -1242,6 +1255,9 @@ def DataJourney3DSection():
     });
     """
 
+    cards = phil["cards"]
+    c1, c2, c3 = cards[0], cards[1], cards[2]
+
     return Section(
         # Tooltip Flutuante de Inspeção Tátil 3D (Raycaster HUD)
         Div(
@@ -1250,8 +1266,8 @@ def DataJourney3DSection():
                 Span("NODE_001", id="tt-node-id", cls="text-[10px] font-mono font-bold text-emerald-400 tracking-wider"),
                 cls="flex items-center gap-1.5 mb-0.5"
             ),
-            Div("SLA CONCESSÃO PÚBLICA", id="tt-node-kpi", cls="text-xs font-bold text-white tracking-tight"),
-            Div("CONFORMIDADE: 99.4% • QUERY: 4ms", id="tt-node-meta", cls="text-[10px] font-mono text-zinc-400 mt-0.5"),
+            Div(phil["tt_kpi_label"], id="tt-node-kpi", cls="text-xs font-bold text-white tracking-tight"),
+            Div(f"{phil['tt_conf_label']}: 99.4% • QUERY: 4ms", id="tt-node-meta", cls="text-[10px] font-mono text-zinc-400 mt-0.5"),
             id="node-3d-tooltip",
             cls="fixed z-50 pointer-events-none opacity-0 transition-opacity duration-150 bg-[#0A0A0E]/95 backdrop-blur-md border border-emerald-500/30 px-3.5 py-2.5 rounded-xl shadow-2xl"
         ),
@@ -1263,8 +1279,8 @@ def DataJourney3DSection():
 
                 # Header Editorial do Palco 3D
                 Div(
-                    Span("ARQUITETURA INTERATIVA 3D • ROLE E INSPECIONE OS NÓS", cls="text-[11px] font-mono uppercase tracking-[0.25em] text-emerald-400 block mb-2"),
-                    H2("DO CAOS OPERACIONAL", Br(), Span("à Clareza Executiva.", cls="font-playfair italic text-zinc-300 font-normal"),
+                    Span(phil["tag"], cls="text-[11px] font-mono uppercase tracking-[0.25em] text-emerald-400 block mb-2"),
+                    H2(phil["h2_line1"], Br(), Span(phil["h2_line2"], cls="font-playfair italic text-zinc-300 font-normal"),
                        cls="text-3xl sm:text-5xl font-oswald uppercase tracking-tight text-white leading-[1.1]"),
                     cls="relative z-10 pt-24 px-6 max-w-7xl mx-auto w-full pointer-events-none"
                 ),
@@ -1274,29 +1290,29 @@ def DataJourney3DSection():
                     Div(
                         Div(
                             Span(cls="size-2 rounded-full bg-emerald-400 animate-pulse"),
-                            Span("01 // BASES DISPERSAS & CAOS OPERACIONAL", id="stage-3d-badge", cls="text-xs font-mono font-semibold text-white tracking-wider"),
+                            Span(phil["stage_intro"], id="stage-3d-badge", cls="text-xs font-mono font-semibold text-white tracking-wider"),
                             cls="flex items-center gap-2.5 mb-1"
                         ),
-                        P("Entropia: 98.4% • Planilhas & Sistemas Isolados", id="stage-3d-metric", cls="text-xs font-mono text-zinc-400"),
+                        P(phil["stage_metric_1"], id="stage-3d-metric", cls="text-xs font-mono text-zinc-400"),
                         cls="glass-pill px-5 py-3.5 rounded-2xl border border-white/10"
                     ),
                     # Seletor Multi-Topologia (OLAP | Star Schema | Gaussiana)
                     Div(
-                        Span("TOPOLOGIA:", cls="hidden md:inline-block text-[10px] font-mono text-zinc-400 uppercase tracking-widest mr-1"),
+                        Span("TOPOLOGY:" if lang == "en" else "TOPOLOGIA:", cls="hidden md:inline-block text-[10px] font-mono text-zinc-400 uppercase tracking-widest mr-1"),
                         Button(
-                            "01. MATRIZ OLAP",
+                            phil["mode_olap"],
                             type="button",
                             data_topo="olap",
                             cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider bg-white text-black font-semibold px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-md"
                         ),
                         Button(
-                            "02. STAR SCHEMA",
+                            phil["mode_star"],
                             type="button",
                             data_topo="star",
                             cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider text-zinc-300 hover:text-white bg-[#121217]/90 border border-white/10 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
                         ),
                         Button(
-                            "03. GAUSSIANA 3D",
+                            phil["mode_gauss"],
                             type="button",
                             data_topo="gauss",
                             cls="topo-btn font-mono text-[10px] sm:text-xs tracking-wider text-zinc-300 hover:text-white bg-[#121217]/90 border border-white/10 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
@@ -1316,23 +1332,23 @@ def DataJourney3DSection():
         # Bloco de Filosofia que desliza por cima do palco 3D ao final do scroll
         Div(
             Div(
-                H2("Dashboards são fáceis.", Br(), Span("Decisões são difíceis.", cls="font-playfair italic text-zinc-400 font-normal"), cls="text-4xl sm:text-6xl font-bold tracking-tight text-white text-center mb-6 gs-scroll leading-[1.18]"),
-                P("Qualquer um pode conectar um CSV a um visualizador comercial. Meu foco é estruturar dados para que reflitam rigorosamente a realidade operacional e respondam às perguntas estratégicas da liderança.", cls="text-center text-zinc-400 max-w-2xl mx-auto mb-16 text-base sm:text-lg gs-scroll"),
+                H2(phil["h2_sub1"], Br(), Span(phil["h2_sub2"], cls="font-playfair italic text-zinc-400 font-normal"), cls="text-4xl sm:text-6xl font-bold tracking-tight text-white text-center mb-6 gs-scroll leading-[1.18]"),
+                P(phil["p_sub"], cls="text-center text-zinc-400 max-w-2xl mx-auto mb-16 text-base sm:text-lg gs-scroll"),
                 Div(
                     # Card 1
                     Div(
                         Div(
-                            Span("ETL & GOVERNANÇA", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span(c1["tag"], cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
                             Span("01", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
                             cls="flex items-center justify-between"
                         ),
                         Div(
-                            H4("Higienização & Pipeline", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("Garbage in, garbage out. Construo rotinas automatizadas e contratos de dados para tratar anomalias antes que elas contaminem reuniões de diretoria.", cls="text-sm text-zinc-400 leading-relaxed"),
+                            H4(c1["title"], cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P(c1["desc"], cls="text-sm text-zinc-400 leading-relaxed"),
                         ),
                         Div(
                             Span(cls="size-2 rounded-full bg-blue-400 mr-2.5"),
-                            Span("Dados auditáveis e consistentes", cls="text-xs font-semibold text-zinc-300"),
+                            Span(c1["footer"], cls="text-xs font-semibold text-zinc-300"),
                             cls="flex items-center pt-6 mt-6 border-t border-white/10"
                         ),
                         cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
@@ -1340,17 +1356,17 @@ def DataJourney3DSection():
                     # Card 2
                     Div(
                         Div(
-                            Span("ARQUITETURA RELACIONAL", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span(c2["tag"], cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
                             Span("02", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
                             cls="flex items-center justify-between"
                         ),
                         Div(
-                            H4("Modelagem Dimensional", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("Modelos relacionais otimizados em Star Schema. Crio a fundação que permite consultas de alta performance e cruzamentos analíticos para bases públicas e operacionais complexas.", cls="text-sm text-zinc-400 leading-relaxed"),
+                            H4(c2["title"], cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P(c2["desc"], cls="text-sm text-zinc-400 leading-relaxed"),
                         ),
                         Div(
                             Span(cls="size-2 rounded-full bg-emerald-400 mr-2.5"),
-                            Span("Consultas otimizadas em SQL", cls="text-xs font-semibold text-zinc-300"),
+                            Span(c2["footer"], cls="text-xs font-semibold text-zinc-300"),
                             cls="flex items-center pt-6 mt-6 border-t border-white/10"
                         ),
                         cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
@@ -1358,17 +1374,17 @@ def DataJourney3DSection():
                     # Card 3
                     Div(
                         Div(
-                            Span("UI/UX & STORYTELLING", cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
+                            Span(c3["tag"], cls="text-[11px] font-mono font-bold tracking-widest text-zinc-400 uppercase"),
                             Span("03", cls="text-4xl font-oswald text-zinc-600 group-hover:text-white transition-colors duration-300"),
                             cls="flex items-center justify-between"
                         ),
                         Div(
-                            H4("Visualização Executiva", cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
-                            P("O cérebro humano é visual e seletivo. Projeto telas com hierarquia óptica limpa para que gestores absorvam conclusões críticas com rapidez e clareza.", cls="text-sm text-zinc-400 leading-relaxed"),
+                            H4(c3["title"], cls="text-2xl font-oswald uppercase tracking-tight text-white mt-6 mb-3 leading-[1.18]"),
+                            P(c3["desc"], cls="text-sm text-zinc-400 leading-relaxed"),
                         ),
                         Div(
                             Span(cls="size-2 rounded-full bg-amber-400 mr-2.5"),
-                            Span("Foco em alta adoção prática", cls="text-xs font-semibold text-zinc-300"),
+                            Span(c3["footer"], cls="text-xs font-semibold text-zinc-300"),
                             cls="flex items-center pt-6 mt-6 border-t border-white/10"
                         ),
                         cls="bg-[#121217] rounded-[28px] p-8 md:p-10 border border-white/10 hover:border-white/30 transition-all duration-300 relative group flex flex-col justify-between gs-scroll"
@@ -1385,16 +1401,20 @@ def DataJourney3DSection():
         cls="relative bg-[#0A0A0C] border-b border-white/10"
     )
 
-def Diagnostico():
+def Diagnostico(lang="pt"):
+    t = get_content(lang)
+    diag_content = t["diagnostic"]
+    diag_data = get_diagnostico_data(lang)
+
     btn = "w-full text-left p-5 rounded-2xl border border-white/10 bg-[#16161D] text-zinc-200 hover:border-white/40 hover:bg-white hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-white transition-all font-medium text-sm md:text-base cursor-pointer"
 
     # Painel Único Dinâmico
     painel_dinamico = Div(
         Div(
             Div(
-                Span(cls="text-xs font-mono uppercase tracking-widest text-zinc-400", **{"x-text": "`Pergunta 0${i + 1} de 0${total}`"}),
+                Span(cls="text-xs font-mono uppercase tracking-widest text-zinc-400", **{"x-text": f"`{diag_content['question_prefix']} 0${{i + 1}} {diag_content['of']} 0${{total}}`"}),
                 Button(
-                    "← Voltar",
+                    diag_content["back"],
                     type="button",
                     cls="text-xs font-mono text-zinc-400 hover:text-white underline cursor-pointer",
                     **{"x-show": "i > 0", "@click": "voltar()"}
@@ -1423,21 +1443,21 @@ def Diagnostico():
     resultado = Div(
         Div(
             Span(cls="size-2 rounded-full bg-emerald-400"),
-            Span("Diagnóstico Concluído", cls="text-xs font-mono uppercase tracking-wider text-emerald-400"),
+            Span(diag_content["result_badge"], cls="text-xs font-mono uppercase tracking-wider text-emerald-400"),
             cls="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4"
         ),
         H3(cls="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight", **{"x-text": "nivel.titulo"}),
         Div(
-            Span("Pontuação Consolidada: ", cls="text-zinc-400"),
+            Span(diag_content["analysis_label"] + " ", cls="text-zinc-400"),
             Span(cls="text-white font-bold", **{"x-text": "`${pontos} / ${dados.max}`"}),
             cls="font-mono text-sm mb-6"
         ),
         P(cls="text-zinc-300 text-base md:text-lg leading-relaxed mb-8 max-w-xl mx-auto", **{"x-text": "nivel.recomendacao"}),
         Div(
-            A("Conversar Sobre o Próximo Passo", href=f"mailto:{EMAIL_CONTACT}",
+            A(diag_content["cta_btn"], href=f"mailto:{EMAIL_CONTACT}",
               cls="bg-white text-black font-semibold px-8 py-4 rounded-xl hover:bg-zinc-200 transition-colors shadow-lg",
               **{":href": "mailto"}),
-            Button("Refazer Diagnóstico", type="button",
+            Button(diag_content["restart"], type="button",
                    cls="border border-white/20 bg-transparent text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition-all cursor-pointer",
                    **{"@click": "reiniciar()"}),
             cls="flex flex-wrap items-center justify-center gap-4",
@@ -1446,15 +1466,15 @@ def Diagnostico():
         cls="text-center py-4"
     )
 
-    safe_json = json.dumps(DIAGNOSTICO, ensure_ascii=False).replace("</", "<\\/")
+    safe_json = json.dumps(diag_data, ensure_ascii=False).replace("</", "<\\/")
 
     return Section(
         Div(
-            Span("FERRAMENTA INTERATIVA SEM CADASTRO", cls="text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 text-center block mb-3"),
-            H2("DIAGNÓSTICO DE MATURIDADE EM DADOS",
+            Span(diag_content["tag"], cls="text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 text-center block mb-3"),
+            H2(diag_content["h2"],
                cls="text-4xl md:text-5xl font-oswald uppercase tracking-tight text-white text-center mb-4 leading-[1.18]"),
-            P("Quatro perguntas objetivas para mapear a maturidade analítica da sua operação e o próximo passo para alcançar decisões estratégicas.",
-              cls="text-center text-zinc-400 text-base md:text-lg mb-12 max-w-xl mx-auto"),
+            P(diag_content["desc"],
+               cls="text-center text-zinc-400 text-base md:text-lg mb-12 max-w-xl mx-auto"),
             Div(
                 # Progress Track com Acessibilidade
                 Div(
@@ -1480,7 +1500,11 @@ def Diagnostico():
         cls="py-28 px-6 bg-[#0E0E12] relative z-10 border-t border-white/10 gs-scroll scroll-mt-20",
     )
 
-def ExecutiveCTASection():
+def ExecutiveCTASection(lang="pt"):
+    t = get_content(lang)
+    cta = t["cta"]
+    mail_subject = urllib.parse.quote(cta["subject"])
+
     return Section(
         Div(
             # Card Monumental com Spotlight Interativo no Mouse
@@ -1503,20 +1527,20 @@ def ExecutiveCTASection():
                     Div(
                         Span(cls="size-2 rounded-full bg-emerald-400 animate-ping"),
                         Span(cls="size-2 rounded-full bg-emerald-400 -ml-2"),
-                        Span("DISPONÍVEL PARA PROJETOS ESTRATÉGICOS & POSIÇÕES EXECUTIVAS", cls="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-emerald-400"),
+                        Span(cta["badge"], cls="text-[10px] sm:text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-emerald-400"),
                         cls="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8"
                     ),
 
                     # Headline Monumental
                     H2(
-                        "VAMOS TRANSFORMAR DADOS",
+                        cta["h2_line1"],
                         Br(),
-                        Span("em Decisões de Alto Impacto?", cls="font-playfair italic font-normal text-zinc-300"),
+                        Span(cta["h2_line2"], cls="font-playfair italic font-normal text-zinc-300"),
                         cls="text-4xl sm:text-6xl lg:text-7xl font-oswald uppercase tracking-tight text-white leading-[1.05] mb-6 max-w-4xl mx-auto"
                     ),
 
                     P(
-                        "Seja para estruturar pipelines auditáveis em Python e SQL, desenhar cockpits executivos em Power BI ou elevar a governança analítica da sua operação em São Paulo ou remotamente.",
+                        cta["desc"],
                         cls="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed"
                     ),
 
@@ -1524,9 +1548,9 @@ def ExecutiveCTASection():
                     Div(
                         # Botão Primário (Mailto Direto)
                         A(
-                            Span("Iniciar Conversa Agora"),
+                            Span(cta["btn_start"]),
                             NotStr('<svg class="w-4 h-4 ml-2.5 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>'),
-                            href=f"mailto:{EMAIL_CONTACT}?subject=Contato%20Estrat%C3%A9gico%20via%20Portf%C3%B3lio%20-%20Jo%C3%A3o%20Barbosa",
+                            href=f"mailto:{EMAIL_CONTACT}?subject={mail_subject}",
                             cls="w-full sm:w-auto inline-flex items-center justify-center bg-white text-black font-semibold text-sm sm:text-base px-8 py-4 rounded-2xl hover:bg-zinc-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] group/btn"
                         ),
 
@@ -1534,7 +1558,7 @@ def ExecutiveCTASection():
                         Button(
                             NotStr('<svg x-show="!copied" class="w-4 h-4 mr-2.5 text-zinc-400 group-hover/copy:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'),
                             NotStr('<svg x-show="copied" x-cloak class="w-4 h-4 mr-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'),
-                            Span(**{"x-text": f"copied ? 'E-mail Copiado: {EMAIL_CONTACT}' : 'Copiar E-mail Direto'"}),
+                            Span(**{"x-text": f"copied ? '{cta['btn_copied'].format(email=EMAIL_CONTACT)}' : '{cta['btn_copy']}'"}),
                             type="button",
                             cls="w-full sm:w-auto inline-flex items-center justify-center bg-[#181820] hover:bg-[#22222C] text-zinc-200 hover:text-white font-mono text-xs sm:text-sm px-7 py-4 rounded-2xl border border-white/15 hover:border-white/30 transition-all cursor-pointer group/copy",
                             **{
@@ -1547,7 +1571,7 @@ def ExecutiveCTASection():
                     # Barra Inferior de Conexão Rápida e Credenciais
                     Div(
                         A(
-                            Span("LINKEDIN EXECUTIVO", cls="text-xs font-mono text-zinc-300 group-hover/lk:text-white transition-colors"),
+                            Span(cta["lk_label"], cls="text-xs font-mono text-zinc-300 group-hover/lk:text-white transition-colors"),
                             NotStr('<svg class="w-3.5 h-3.5 text-zinc-500 group-hover/lk:text-emerald-400 group-hover/lk:translate-x-0.5 group-hover/lk:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
                             href=LINKEDIN_URL,
                             target="_blank",
@@ -1555,7 +1579,7 @@ def ExecutiveCTASection():
                             cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all group/lk"
                         ),
                         A(
-                            Span("REPOSITÓRIO GITHUB", cls="text-xs font-mono text-zinc-300 group-hover/gh:text-white transition-colors"),
+                            Span(cta["gh_label"], cls="text-xs font-mono text-zinc-300 group-hover/gh:text-white transition-colors"),
                             NotStr('<svg class="w-3.5 h-3.5 text-zinc-500 group-hover/gh:text-emerald-400 group-hover/gh:translate-x-0.5 group-hover/gh:-translate-y-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>'),
                             href=GITHUB_URL,
                             target="_blank",
@@ -1563,8 +1587,8 @@ def ExecutiveCTASection():
                             cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 transition-all group/gh"
                         ),
                         Div(
-                            Span("BASE:", cls="text-[11px] font-mono text-zinc-500"),
-                            Span("SÃO PAULO, SP • BRASIL", cls="text-xs font-mono text-zinc-300"),
+                            Span(cta["base_label"], cls="text-[11px] font-mono text-zinc-500"),
+                            Span(cta["base_val"], cls="text-xs font-mono text-zinc-300"),
                             cls="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5"
                         ),
                         cls="flex flex-wrap items-center justify-center gap-3 pt-8 border-t border-white/10 max-w-2xl mx-auto"
@@ -1585,44 +1609,79 @@ def ExecutiveCTASection():
         cls="py-20 sm:py-28 bg-[#0A0A0C] border-t border-white/10 relative z-20 gs-scroll"
     )
 
-@rt("/")
-def get():
+def render_portfolio(lang="pt"):
+    t = get_content(lang)
+    meta = t["meta"]
+    nav = t["nav"]
+    hero = t["hero"]
+    metrics = t["metrics"]
+    work = t["work"]
+    cap = t["capabilities"]
+    footer = t["footer"]
+
+    # Faixa de Métricas formatada
+    metric_elements = []
+    for idx, m in enumerate(metrics):
+        metric_elements.append(
+            Div(
+                H3(m["val"], cls=f"text-2xl lg:text-[26px] font-oswald tracking-tight {'text-emerald-400' if idx == 3 else 'text-white'}"),
+                P(m["prefix"], Strong(m["strong"], cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
+                cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
+            )
+        )
+        if idx < len(metrics) - 1:
+            metric_elements.append(Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"))
+
     return (
-        # --- TOP NAVIGATION (Sincronizada + Mobile Drawer com Alpine) ---
+        # Atualização dinâmica de lang e title no cliente
+        Script(NotStr(f"""
+            document.documentElement.lang = '{meta['lang']}';
+            document.title = {json.dumps(meta['title'])};
+        """)),
+
+        # --- TOP NAVIGATION (Sincronizada + Mobile Drawer com Seletor Bilíngue) ---
         Header(
             Div(
                 # Brand Logo
                 A(
                     Span("João", cls="font-playfair italic font-bold text-3xl text-white"),
                     Span(".", cls="text-zinc-500 font-sans font-light not-italic text-3xl"),
-                    href="/", 
+                    href=f"/{'en' if lang == 'en' else ''}", 
                     cls="group flex items-center"
                 ),
                 
                 # Links Desktop (Ordem Real da Página)
                 Nav(
-                    A("Sobre", href="#about", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
-                    A("Projetos", href="#work", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
-                    A("Filosofia", href="#philosophy", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
-                    A("Engenharia", href="#capabilities", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
-                    A("Diagnóstico", href="#diagnostico", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
+                    A(nav["about"], href="#about", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
+                    A(nav["work"], href="#work", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
+                    A(nav["philosophy"], href="#philosophy", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
+                    A(nav["capabilities"], href="#capabilities", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
+                    A(nav["diagnostic"], href="#diagnostico", cls="text-sm font-semibold text-zinc-300 hover:text-white transition-colors"),
                     cls="hidden md:flex items-center gap-8"
                 ),
                 
-                # Right CTA & Mobile Toggle
+                # Right CTA & Language Toggle & Mobile Hamburger
                 Div(
+                    # Language Selector Pill [ PT | EN ]
+                    Div(
+                        A("PT", href="/", cls=f"px-2.5 py-1 text-xs font-mono rounded-full font-bold transition-all {'bg-white text-black shadow-sm' if lang == 'pt' else 'text-zinc-400 hover:text-white'}"),
+                        Span("|", cls="text-zinc-600 text-xs font-mono select-none"),
+                        A("EN", href="/en", cls=f"px-2.5 py-1 text-xs font-mono rounded-full font-bold transition-all {'bg-white text-black shadow-sm' if lang == 'en' else 'text-zinc-400 hover:text-white'}"),
+                        cls="flex items-center gap-1 p-1 rounded-full bg-white/[0.05] border border-white/10"
+                    ),
+
                     A(
-                        "Iniciar Conversa", 
+                        nav["cta"], 
                         href=f"mailto:{EMAIL_CONTACT}", 
-                        cls="hidden sm:inline-flex bg-white text-black text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-zinc-200 transition-colors shadow-sm"
+                        cls="hidden sm:inline-flex bg-white text-black text-sm font-semibold px-6 py-2.5 rounded-full hover:bg-zinc-200 transition-colors shadow-sm ml-2"
                     ),
                     Button(
                         NotStr('<svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>'),
                         cls="md:hidden p-2 text-white focus:outline-none cursor-pointer",
-                        aria_label="Abrir menu de navegação",
+                        aria_label="Menu",
                         **{"@click": "mobileOpen = !mobileOpen"}
                     ),
-                    cls="flex items-center gap-3"
+                    cls="flex items-center gap-2 sm:gap-3"
                 ),
                 
                 cls="max-w-[1440px] mx-auto px-6 py-6 flex items-center justify-between"
@@ -1631,12 +1690,23 @@ def get():
             # Mobile Menu Dropdown
             Div(
                 Nav(
-                    A("Sobre", href="#about", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
-                    A("Projetos", href="#work", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
-                    A("Filosofia", href="#philosophy", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
-                    A("Engenharia", href="#capabilities", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
-                    A("Diagnóstico", href="#diagnostico", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
-                    A("Iniciar Conversa", href=f"mailto:{EMAIL_CONTACT}", cls="text-base font-semibold text-emerald-400 py-3 block", **{"@click": "mobileOpen = false"}),
+                    # Language Pill no Mobile
+                    Div(
+                        Span("Idioma / Language:", cls="text-xs font-mono text-zinc-400 uppercase tracking-wider"),
+                        Div(
+                            A("PT", href="/", cls=f"px-3 py-1 text-xs font-mono rounded-full font-bold {'bg-white text-black' if lang == 'pt' else 'text-zinc-400 hover:text-white'}"),
+                            Span("|", cls="text-zinc-600 text-xs font-mono"),
+                            A("EN", href="/en", cls=f"px-3 py-1 text-xs font-mono rounded-full font-bold {'bg-white text-black' if lang == 'en' else 'text-zinc-400 hover:text-white'}"),
+                            cls="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10"
+                        ),
+                        cls="flex items-center justify-between py-3 border-b border-white/5"
+                    ),
+                    A(nav["about"], href="#about", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
+                    A(nav["work"], href="#work", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
+                    A(nav["philosophy"], href="#philosophy", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
+                    A(nav["capabilities"], href="#capabilities", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
+                    A(nav["diagnostic"], href="#diagnostico", cls="text-base font-semibold text-zinc-200 hover:text-white py-2 block border-b border-white/5", **{"@click": "mobileOpen = false"}),
+                    A(nav["cta"], href=f"mailto:{EMAIL_CONTACT}", cls="text-base font-semibold text-emerald-400 py-3 block", **{"@click": "mobileOpen = false"}),
                     cls="flex flex-col p-6 space-y-1"
                 ),
                 cls="md:hidden bg-[#0E0E12] border-b border-white/10 shadow-2xl",
@@ -1662,7 +1732,7 @@ def get():
                 # CENTER PORTRAIT (Transparent Cutout Image)
                 Img(
                     src="/static/images/joao.png", 
-                    alt="João Barbosa - Analista de Dados & BI", 
+                    alt="João Barbosa - Data Architect & BI", 
                     width="432",
                     height="578",
                     fetchpriority="high",
@@ -1675,7 +1745,7 @@ def get():
                 # MIDDLE LEFT: Availability Pill
                 A(
                     Div(cls="w-2.5 h-2.5 rounded-full bg-emerald-400"),
-                    Span("Disponível para Projetos Estratégicos", cls="text-sm font-semibold text-zinc-200"),
+                    Span(hero["badge"], cls="text-sm font-semibold text-zinc-200"),
                     href="#diagnostico",
                     cls="hidden lg:flex absolute left-[6%] xl:left-[10%] top-[45%] z-40 glass-pill px-4 py-2 rounded-full items-center gap-2.5 shadow-xl hover:border-white/30 transition-all gs-reveal"
                 ),
@@ -1683,29 +1753,29 @@ def get():
                 # MIDDLE RIGHT: Strategic Focus
                 Div(
                     Div(
-                        Span("FOCO ESTRATÉGICO", cls="text-[11px] font-mono font-bold text-zinc-400 tracking-wider block mb-1 uppercase"),
-                        P("Arquitetura de Dados, Analytics e Visualização para Decisões Executivas.", cls="text-sm font-semibold text-zinc-200 leading-snug"),
+                        Span(hero["focus_tag"], cls="text-[11px] font-mono font-bold text-zinc-400 tracking-wider block mb-1 uppercase"),
+                        P(hero["focus_desc"], cls="text-sm font-semibold text-zinc-200 leading-snug"),
                         cls="border-l-2 border-white/30 pl-3.5"
                     ),
                     cls="hidden lg:block absolute right-[6%] xl:right-[10%] top-[45%] z-40 max-w-[220px] text-left gs-reveal pointer-events-none"
                 ),
                 
-                # BOTTOM LEFT: "EU SOU JOÃO" (Entrelinha e respiro corrigidos)
+                # BOTTOM LEFT: "EU SOU JOÃO" / "I AM JOÃO"
                 Div(
                     H1(
-                        Span("EU SOU", cls="block"), 
-                        Span("JOÃO", cls="text-white block pt-[0.1em]"), 
+                        Span(hero["title_1"], cls="block"), 
+                        Span(hero["title_2"], cls="text-white block pt-[0.1em]"), 
                         cls="font-oswald text-[9vw] xl:text-[112px] leading-[0.98] font-bold text-white/90 uppercase tracking-tight"
                     ),
                     cls="absolute left-[5%] xl:left-[8%] bottom-6 sm:bottom-8 lg:bottom-10 z-20 gs-reveal pointer-events-none"
                 ),
                 
-                # BOTTOM RIGHT: "DATA ANALYST" (Hierarquia visual valorizada em branco)
+                # BOTTOM RIGHT: "DATA ANALYST" / "DATA ARCHITECT & BI"
                 Div(
                     H2(
-                        Span("DATA", cls="text-white block"), 
-                        Span("ANALYST", cls="text-white block pt-[0.1em]"), 
-                        cls="font-oswald text-[8vw] xl:text-[92px] leading-[0.98] font-bold uppercase tracking-tight text-right"
+                        Span(hero["role_1"], cls="text-white block"), 
+                        Span(hero["role_2"], cls="text-white block pt-[0.1em]"), 
+                        cls="font-oswald text-[8vw] xl:text-[86px] leading-[0.98] font-bold uppercase tracking-tight text-right"
                     ),
                     cls="absolute right-[5%] xl:right-[8%] bottom-6 sm:bottom-8 lg:bottom-10 z-20 gs-reveal pointer-events-none"
                 ),
@@ -1714,12 +1784,12 @@ def get():
                 Div(
                     Div(
                         Span(cls="inline-block w-2 h-2 rounded-full bg-emerald-400"),
-                        Span("STACK ANALÍTICA: PYTHON • POSTGRESQL • POWER BI"),
+                        Span("ANALYTICS STACK: PYTHON • POSTGRESQL • POWER BI" if lang == 'en' else "STACK ANALÍTICA: PYTHON • POSTGRESQL • POWER BI"),
                         cls="flex items-center gap-2.5"
                     ),
                     Div(
-                        Span("PREF. DE SÃO PAULO • GOV DATA LAB"),
-                        A("EXPLORAR PORTFÓLIO ↓", href="#work", cls="text-white underline underline-offset-4 hover:text-zinc-300 ml-4 pointer-events-auto"),
+                        Span("CITY OF SÃO PAULO • GOV DATA LAB" if lang == 'en' else "PREF. DE SÃO PAULO • GOV DATA LAB"),
+                        A("EXPLORE PORTFOLIO ↓" if lang == 'en' else "EXPLORAR PORTFÓLIO ↓", href="#work", cls="text-white underline underline-offset-4 hover:text-zinc-300 ml-4 pointer-events-auto"),
                         cls="flex items-center gap-4"
                     ),
                     cls="absolute bottom-2 inset-x-0 max-w-7xl mx-auto px-6 hidden sm:flex items-center justify-between text-[11px] font-mono text-zinc-400 z-40"
@@ -1733,33 +1803,7 @@ def get():
         # --- METRICS & PROVEN RECORD STRIP (Slim Single Row) ---
         Section(
             Div(
-                # Metric 1
-                Div(
-                    H3("+3 ANOS", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Inteligência na ", Strong("Pref. de São Paulo / SPP", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
-                    cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
-                ),
-                Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
-                # Metric 2
-                Div(
-                    H3("CONCESSÕES", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Auditoria de ", Strong("Contratos Públicos & SLAs", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
-                    cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
-                ),
-                Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
-                # Metric 3
-                Div(
-                    H3("STAR SCHEMA", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-white"),
-                    P("Modelagem dimensional & ", Strong("Integridade em SQL", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
-                    cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
-                ),
-                Div(cls="w-px h-8 bg-white/10 mx-2 hidden sm:block gs-scroll"),
-                # Metric 4
-                Div(
-                    H3("DECISÃO C-LEVEL", cls="text-2xl lg:text-[26px] font-oswald tracking-tight text-emerald-400"),
-                    P("Cockpits estratégicos de ", Strong("Alta Adoção Executiva", cls="text-zinc-200"), cls="text-[11px] lg:text-xs text-zinc-400 mt-0.5 leading-tight whitespace-nowrap"),
-                    cls="flex-1 flex flex-col items-center text-center gs-scroll px-2"
-                ),
+                *metric_elements,
                 cls="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between px-6 gap-4 sm:gap-0"
             ),
             cls="border-b border-white/10 bg-[#0E0E12] py-5 md:py-6 relative z-20"
@@ -1769,47 +1813,47 @@ def get():
         TechMarquee(),
 
         # --- BIO / TRAJETÓRIA EXECUTIVA ---
-        AboutSection(),
+        AboutSection(lang=lang),
 
         # --- SELECTED WORK (REAL INTERACTIVE CAROUSEL) ---
         Section(
             Div(
                 Div(
-                    Span("PORTFÓLIO EXECUTIVO SELECIONADO", cls="text-xs font-mono uppercase tracking-[0.2em] text-zinc-400 block mb-3"),
-                    H2("PROJETOS RECENTES", cls="text-4xl sm:text-5xl font-oswald uppercase tracking-tight text-white mb-4 leading-[1.18]"),
-                    P("Demonstrações interativas reais construídas com rigor relacional, telemetria e interfaces executivas de alta adoção.", cls="text-zinc-400 text-base max-w-xl"),
+                    Span(work["tag"], cls="text-xs font-mono uppercase tracking-[0.2em] text-zinc-400 block mb-3"),
+                    H2(work["h2"], cls="text-4xl sm:text-5xl font-oswald uppercase tracking-tight text-white mb-4 leading-[1.18]"),
+                    P(work["p"], cls="text-zinc-400 text-base max-w-xl"),
                     cls="text-left mb-16 gs-scroll"
                 ),
-                FeatureCarousel(),
+                FeatureCarousel(lang=lang),
                 cls="max-w-7xl mx-auto px-6 py-24"
             ),
             id="work", cls="bg-[#0A0A0C] relative z-10 border-b border-white/10"
         ),
 
         # --- PHILOSOPHY (COM CENA 3D INTERATIVA) ---
-        DataJourney3DSection(),
+        DataJourney3DSection(lang=lang),
 
-        # --- BENTO GRID: CAPACIDADES TÉCNICAS (Impressão Digital em Dark Mode) ---
+        # --- BENTO GRID: CAPACIDADES TÉCNICAS ---
         Section(
             Div(
-                Span("CAPACIDADES TÉCNICAS", cls="text-xs font-bold text-zinc-400 tracking-widest uppercase mb-3 block font-mono text-center gs-scroll"),
-                H2("ENGENHARIA & INTELIGÊNCIA EM DADOS", cls="text-4xl md:text-5xl font-oswald uppercase tracking-tight text-white text-center mb-4 gs-scroll leading-[1.18]"),
-                P("Modelagem relacional rigorosa, governança e rastreabilidade da origem ao painel final.", cls="text-center text-zinc-400 mb-16 gs-scroll text-base md:text-lg max-w-2xl mx-auto"),
+                Span(cap["tag"], cls="text-xs font-bold text-zinc-400 tracking-widest uppercase mb-3 block font-mono text-center gs-scroll"),
+                H2(cap["h2"], cls="text-4xl md:text-5xl font-oswald uppercase tracking-tight text-white text-center mb-4 gs-scroll leading-[1.18]"),
+                P(cap["desc"], cls="text-center text-zinc-400 mb-16 gs-scroll text-base md:text-lg max-w-2xl mx-auto"),
                 
                 Div(
-                    # Card 1: 100% Integridade (com Impressão Digital / Loop Orbital SVG)
+                    # Card 1: Integridade & Auditoria
                     Div(
                         Div(
                             Div(
                                 NotStr('''<svg class="integrity-orbit transition-colors duration-500 text-white/10 absolute inset-0 size-full pointer-events-none" viewBox="0 0 254 104" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M112.891 97.7022C140.366 97.0802 171.004 94.6715 201.087 87.5116C210.43 85.2881 219.615 82.6412 228.284 78.2473C232.198 76.3179 235.905 73.9942 239.348 71.3124C241.85 69.2557 243.954 66.7571 245.555 63.9408C249.34 57.3235 248.281 50.5341 242.498 45.6109C239.033 42.7237 235.228 40.2703 231.169 38.3054C219.443 32.7209 207.141 28.4382 194.482 25.534C184.013 23.1927 173.358 21.7755 162.64 21.2989C161.376 21.3512 160.113 21.181 158.908 20.796C158.034 20.399 156.857 19.1682 156.962 18.4535C157.115 17.8927 157.381 17.3689 157.743 16.9139C158.104 16.4588 158.555 16.0821 159.067 15.8066C160.14 15.4683 161.274 15.3733 162.389 15.5286C179.805 15.3566 196.626 18.8373 212.998 24.462C220.978 27.2494 228.798 30.4747 236.423 34.1232C240.476 36.1159 244.202 38.7131 247.474 41.8258C254.342 48.2578 255.745 56.9397 251.841 65.4892C249.793 69.8582 246.736 73.6777 242.921 76.6327C236.224 82.0192 228.522 85.4602 220.502 88.2924C205.017 93.7847 188.964 96.9081 172.738 99.2109C153.442 101.949 133.993 103.478 114.506 103.79C91.1468 104.161 67.9334 102.97 45.1169 97.5831C36.0094 95.5616 27.2626 92.1655 19.1771 87.5116C13.839 84.5746 9.1557 80.5802 5.41318 75.7725C-0.54238 67.7259 -1.13794 59.1763 3.25594 50.2827C5.82447 45.3918 9.29572 41.0315 13.4863 37.4319C24.2989 27.5721 37.0438 20.9681 50.5431 15.7272C68.1451 8.8849 86.4883 5.1395 105.175 2.83669C129.045 0.0992292 153.151 0.134761 177.013 2.94256C197.672 5.23215 218.04 9.01724 237.588 16.3889C240.089 17.3418 242.498 18.5197 244.933 19.6446C246.627 20.4387 247.725 21.6695 246.997 23.615C246.455 25.1105 244.814 25.5605 242.63 24.5811C230.322 18.9961 217.233 16.1904 204.117 13.4376C188.761 10.3438 173.2 8.36665 157.558 7.52174C129.914 5.70776 102.154 8.06792 75.2124 14.5228C60.6177 17.8788 46.5758 23.2977 33.5102 30.6161C26.6595 34.3329 20.4123 39.0673 14.9818 44.658C12.9433 46.8071 11.1336 49.1622 9.58207 51.6855C4.87056 59.5336 5.61172 67.2494 11.9246 73.7608C15.2064 77.0494 18.8775 79.925 22.8564 82.3236C31.6176 87.7101 41.3848 90.5291 51.3902 92.5804C70.6068 96.5773 90.0219 97.7419 112.891 97.7022Z" fill="currentColor"/>
                                 </svg>'''),
-                                Span("AUDIT", cls="text-4xl font-oswald font-bold tracking-widest text-white z-10 block"),
+                                Span(cap["card1_tag"], cls="text-4xl font-oswald font-bold tracking-widest text-white z-10 block"),
                                 cls="relative flex h-24 w-56 items-center justify-center"
                             ),
                             Div(
-                                H3("Integridade & Auditoria", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                P("Modelagem relacional com validações contínuas para prestação de contas aos órgãos de controle.", cls="text-sm text-zinc-400 mt-1"),
+                                H3(cap["card1_title"], cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
+                                P(cap["card1_desc"], cls="text-sm text-zinc-400 mt-1"),
                                 cls="mt-8 text-center"
                             ),
                             cls="relative m-auto size-fit pt-6"
@@ -1817,7 +1861,7 @@ def get():
                         cls="group relative col-span-full flex flex-col justify-between overflow-hidden lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
-                    # Card 2: Radar / Conexões Concêntricas
+                    # Card 2: Segurança & Governança
                     Div(
                         Div(
                             Div(
@@ -1828,8 +1872,8 @@ def get():
                                 cls="relative mx-auto flex aspect-square size-32 rounded-full border border-white/10 before:absolute before:-inset-2 before:rounded-full before:border before:border-white/5 items-center justify-center bg-white/[0.02]"
                             ),
                             Div(
-                                H3("Segurança & Governança", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                P("Controle rigoroso de acessos, conformidade e rastreabilidade total de linhagem de dados.", cls="text-sm text-zinc-400 mt-1"),
+                                H3(cap["card2_title"], cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
+                                P(cap["card2_desc"], cls="text-sm text-zinc-400 mt-1"),
                                 cls="relative z-10 mt-6 space-y-2 text-center"
                             ),
                             cls="pt-6"
@@ -1837,7 +1881,7 @@ def get():
                         cls="group relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
-                    # Card 3: Performance em Milissegundos
+                    # Card 3: Performance & Otimização
                     Div(
                         Div(
                             Div(
@@ -1848,8 +1892,8 @@ def get():
                                 cls="pt-2 px-1"
                             ),
                             Div(
-                                H3("Performance & Otimização", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                P("Consultas SQL otimizadas com Star Schema e tempos de resposta instantâneos.", cls="text-sm text-zinc-400 mt-1"),
+                                H3(cap["card3_title"], cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
+                                P(cap["card3_desc"], cls="text-sm text-zinc-400 mt-1"),
                                 cls="relative z-10 mt-6 space-y-2 text-center"
                             ),
                             cls="pt-6"
@@ -1857,7 +1901,7 @@ def get():
                         cls="group relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2 rounded-3xl border border-white/10 bg-[#121217] p-6 shadow-sm hover:border-white/25 transition-all gs-scroll"
                     ),
                     
-                    # Card 4: Pipelines & Telemetria
+                    # Card 4: Pipelines Automatizados
                     Div(
                         Div(
                             Div(
@@ -1868,8 +1912,8 @@ def get():
                                     cls="relative flex aspect-square size-12 rounded-full border border-white/10 before:absolute before:-inset-1.5 before:rounded-full before:border before:border-white/5 items-center justify-center bg-white/[0.02]"
                                 ),
                                 Div(
-                                    H3("Pipelines Automatizados", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                    P("Ingestão contínua com rotinas automatizadas, reexecução assistida e logs de auditoria.", cls="text-sm text-zinc-400 mt-1"),
+                                    H3(cap["card4_title"], cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
+                                    P(cap["card4_desc"], cls="text-sm text-zinc-400 mt-1"),
                                     cls="space-y-2"
                                 ),
                                 cls="relative z-10 flex flex-col justify-between space-y-6"
@@ -1902,8 +1946,8 @@ def get():
                                     cls="relative flex aspect-square size-12 rounded-full border border-white/10 before:absolute before:-inset-1.5 before:rounded-full before:border before:border-white/5 items-center justify-center bg-white/[0.02]"
                                 ),
                                 Div(
-                                    H3("Adoção Executiva C-Level", cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
-                                    P("Storytelling e métricas desenhadas sob medida para diretoria, gerência e analistas de ponta.", cls="text-sm text-zinc-400 mt-1"),
+                                    H3(cap["card5_title"], cls="text-xl font-oswald uppercase tracking-tight text-white font-bold leading-[1.18]"),
+                                    P(cap["card5_desc"], cls="text-sm text-zinc-400 mt-1"),
                                     cls="space-y-2"
                                 ),
                                 cls="relative z-10 flex flex-col justify-between space-y-6"
@@ -1911,17 +1955,17 @@ def get():
                             Div(
                                 Div(
                                     Div(
-                                        Span("Diretoria C-Level", cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
+                                        Span(cap["roles"]["cdo"], cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
                                         Div("CDO", cls="size-9 rounded-full bg-white text-black flex items-center justify-center text-[10px] font-bold tracking-tight ring-2 ring-white/20 shrink-0"),
                                         cls="relative flex items-center justify-end gap-2 pr-6"
                                     ),
                                     Div(
                                         Div("BI", cls="size-9 rounded-full bg-zinc-700 text-white flex items-center justify-center text-[11px] font-bold tracking-tight ring-2 ring-white/20 shrink-0"),
-                                        Span("Liderança de Analytics", cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
+                                        Span(cap["roles"]["bi"], cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
                                         cls="relative flex items-center justify-start gap-2 pl-4"
                                     ),
                                     Div(
-                                        Span("Times de Negócio & Produto", cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
+                                        Span(cap["roles"]["ops"], cls="block rounded border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-zinc-200 shadow-sm"),
                                         Div("OPS", cls="size-9 rounded-full bg-zinc-800 text-white flex items-center justify-center text-[10px] font-bold tracking-tight ring-2 ring-white/20 shrink-0"),
                                         cls="relative flex items-center justify-end gap-2 pr-6"
                                     ),
@@ -1942,10 +1986,10 @@ def get():
         ),
 
         # --- DIAGNÓSTICO DE MATURIDADE EM DADOS ---
-        Diagnostico(),
+        Diagnostico(lang=lang),
 
         # --- EXECUTIVE CLOSING CTA ---
-        ExecutiveCTASection(),
+        ExecutiveCTASection(lang=lang),
         
         # --- FOOTER (Executive Monolith) ---
         Footer(
@@ -1954,10 +1998,10 @@ def get():
                     A(
                         Span("João Barbosa", cls="font-playfair italic font-bold text-3xl text-white"),
                         Span(".", cls="text-zinc-500 font-sans font-light not-italic text-3xl"),
-                        href="/", 
+                        href=f"/{'en' if lang == 'en' else ''}", 
                         cls="group inline-block"
                     ),
-                    P("Arquitetura de Dados • Business Intelligence Executivo • FastHTML & SQL", cls="text-xs text-zinc-400 font-mono mt-2"),
+                    P(footer["role"], cls="text-xs text-zinc-400 font-mono mt-2"),
                     cls="mb-6 md:mb-0"
                 ),
                 Div(
@@ -1970,8 +2014,8 @@ def get():
             ),
             Div(
                 Div(
-                    Span("© 2026 JOÃO BARBOSA. TODOS OS DIREITOS RESERVADOS.", cls="text-[11px] font-mono text-zinc-400"),
-                    Span("DESENHADO PARA DECISÕES ESTRATÉGICAS C-LEVEL.", cls="text-[11px] font-mono text-zinc-400"),
+                    Span(footer["copyright"], cls="text-[11px] font-mono text-zinc-400"),
+                    Span(footer["c_level"], cls="text-[11px] font-mono text-zinc-400"),
                     cls="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 pt-8 border-t border-white/5"
                 ),
                 cls="max-w-7xl mx-auto px-6"
@@ -2005,6 +2049,14 @@ def get():
             }
         """)
     )
+
+@rt("/")
+def get():
+    return render_portfolio("pt")
+
+@rt("/en")
+def get_en():
+    return render_portfolio("en")
 
 if __name__ == "__main__":
     serve()
